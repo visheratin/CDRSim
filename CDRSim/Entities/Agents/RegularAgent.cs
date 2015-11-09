@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MathNet.Numerics.Distributions;
 using System.Configuration;
+using System.Collections.Specialized;
 
 namespace CDRSim.Entities.Agents
 {
@@ -16,25 +17,15 @@ namespace CDRSim.Entities.Agents
 
         public override void Initialize(List<Agent> agents)
         {
-            var appSettings = ConfigurationManager.AppSettings;
-            var activityMean = int.Parse(appSettings["RegularAgentActivityMean"]);
-            var activityStd = int.Parse(appSettings["RegularAgentActivityStd"]);
-            var distribution = new Normal(activityMean, activityStd);
-            var interval = distribution.Sample();
-            ActivityInterval = (int)interval;
+            var agconfig = new AgentConfigurator("RegularAgent");
+       
+            ActivityInterval = agconfig.SetActivityInterval();
 
-            var contactsMean = int.Parse(appSettings["RegularAgentContactsMean"]);
-            var contactsStd = int.Parse(appSettings["RegularAgentContactsStd"]);
-            distribution = new Normal(contactsMean, contactsStd);
-            var contactsNumber = 0;
-            while (contactsNumber == 0)
-            {
-                contactsNumber = (int)distribution.Sample();
-            }
-            var strongConnectionsMean = int.Parse(appSettings["RegularAgentStrongConnectionsMean"]);
-            var strongConnectionsStd = int.Parse(appSettings["RegularAgentStrongConnectionsStd"]);
-            distribution = new Normal(strongConnectionsMean, strongConnectionsStd);
-            var strongConnectionsNumber = (int)distribution.Sample();
+            int strongConnectionsNumber = 0;
+            int contactsNumber = 0;
+
+            agconfig.SetContactsConfig(ref strongConnectionsNumber, ref contactsNumber);
+
             var strongConnectionsInterval = 0.75 / strongConnectionsNumber;
             var strongConnectionsIntervalMin = 0.8 * strongConnectionsInterval;
             var strongConnectionsIntervalDiff = strongConnectionsInterval - strongConnectionsIntervalMin;
@@ -59,7 +50,7 @@ namespace CDRSim.Entities.Agents
                 }
                 else
                 {
-                    if(i == contactsNumber - 1)
+                    if (i == contactsNumber - 1)
                     {
                         probability = total;
                     }
@@ -68,8 +59,11 @@ namespace CDRSim.Entities.Agents
                         probability = 0.2 * total;
                     }
                 }
+
                 total -= probability;
+               
                 Contacts.Add(currentAgent, probability);
+
             }
         }
 
@@ -77,5 +71,42 @@ namespace CDRSim.Entities.Agents
         {
             throw new NotImplementedException();
         }
+    }
+
+    public class AgentConfigurator
+    {
+        private string sectionName;
+        private NameValueCollection section;
+
+        public AgentConfigurator(string sectionName)
+        {
+            this.sectionName = sectionName;
+            section = (NameValueCollection)ConfigurationManager.GetSection(sectionName);
+        }
+
+        public int SetActivityInterval()
+        {
+            var activityMean = int.Parse(section["ActivityMean"]);
+            var activityStd = int.Parse(section["ActivityStd"]);
+            var distribution = new Normal(activityMean, activityStd);
+            var interval = distribution.Sample();
+            return (int)interval;
+        }
+
+        public void SetContactsConfig(ref int strongConnectionsInterval,ref int contactsNumber)
+        {
+            var contactsMean = int.Parse(section["ContactsMean"]);
+            var contactsStd = int.Parse(section["ContactsStd"]);
+            var distribution = new Normal(contactsMean, contactsStd);
+            while (contactsNumber == 0)
+            {
+                contactsNumber = (int)distribution.Sample();
+            }
+            var strongConnectionsMean = int.Parse(section["StrongConnectionsMean"]);
+            var strongConnectionsStd = int.Parse(section["StrongConnectionsStd"]);
+            distribution = new Normal(strongConnectionsMean, strongConnectionsStd);
+            strongConnectionsInterval = (int)distribution.Sample();
+        }
+
     }
 }

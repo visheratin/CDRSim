@@ -52,13 +52,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\Agents\Agent.cs" />
+    <Compile Include="Entities\Agents\Organizer.cs" />
     <Compile Include="Entities\Agents\RegularAgent.cs" />
+    <Compile Include="Entities\Agents\Talker.cs" />
     <Compile Include="Entities\Call.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -11,5 +11,7 @@ namespace CDRSim.Entities.Agents
 
         public abstract void Initialize(List<Agent> agents);
         public abstract Call MakeCall();
+ 
+
     }
 }
