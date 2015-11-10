@@ -23,22 +23,21 @@ namespace CDRSim.Entities.Agents
             ActivityInterval = agconfig.SetActivityInterval();
             
 
-            int strongConnectionsNumber = 0;
-            int contactsNumber = 0;
+            var strongConnectionsNumber = 0;
+            var contactsNumber = 0;
 
             agconfig.SetContactsConfig(ref strongConnectionsNumber, ref contactsNumber);
 
-            var random = new Random();
-
             var contactsLeft = contactsNumber;
+            var random = new Random();
             var strongProbabilyFractoin = 0.8;
             var strongConnectionsInterval = strongProbabilyFractoin / strongConnectionsNumber;
             var strongConnectionsIntervalMin = 0.7 * strongConnectionsInterval;
             var strongConnectionsIntervalDiff = strongConnectionsInterval - strongConnectionsIntervalMin;
-            var averageProbabilityFraction = 1 - strongProbabilyFractoin;
 
             var usedIndices = new List<int>();
 
+            double probabilitySum = 0;
             for (int i = 0; i < contactsNumber; i++)
             {
                 var currentAgentIndex = random.Next(agents.Count);
@@ -57,25 +56,27 @@ namespace CDRSim.Entities.Agents
                 }
                 else
                 {
+                    if (i == contactsNumber - 1)
+                    {
+                        probability = 1 - probabilitySum;
+                    }
 
-                    probability = (averageProbabilityFraction / contactsLeft) * (random.NextDouble() % 0.8);// * random.NextDouble() % 0.0001;
-
+                    else
+                    {
+                        probability = (1 - probabilitySum) / contactsLeft;
+                    }
                 }
 
-                if (currentAgent is Talker)
+                if (currentAgent is Talker && i != contactsNumber - 1)
                 {
-                    var talkerPenalty = probability * (random.NextDouble() % 0.2 );
+                    var talkerPenalty = probability  *  (random.NextDouble() % 0.0001);
                     probability += talkerPenalty;
-                    averageProbabilityFraction -= talkerPenalty;
-                    
                 }
 
                 Contacts.Add(currentAgent, probability); 
                 contactsLeft--;
-               
-
+                probabilitySum += probability;
             }
-          
         }
 
         public override Call MakeCall()
