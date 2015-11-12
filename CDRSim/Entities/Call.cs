@@ -11,9 +11,8 @@ namespace CDRSim.Entities
         public int Finish { get { return Start + Length; } }
         public int Length { get; private set; }
 
-        public Call(int id, Agent from, Agent to, int start, int length)
+        public Call(Agent from, Agent to, int start, int length)
         {
-            Id = id;
             From = from;
             To = to;
             Start = start;

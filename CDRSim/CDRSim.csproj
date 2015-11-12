@@ -56,6 +56,7 @@
     <Compile Include="Entities\Agents\RegularAgent.cs" />
     <Compile Include="Entities\Agents\Talker.cs" />
     <Compile Include="Entities\Call.cs" />
+    <Compile Include="Helpers\AgentConfigurator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

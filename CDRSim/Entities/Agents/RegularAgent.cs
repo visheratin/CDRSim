@@ -4,6 +4,7 @@ using System.Linq;
 using MathNet.Numerics.Distributions;
 using System.Configuration;
 using System.Collections.Specialized;
+using CDRSim.Helpers;
 
 namespace CDRSim.Entities.Agents
 {
@@ -18,8 +19,8 @@ namespace CDRSim.Entities.Agents
         public override void Initialize(List<Agent> agents)
         {
             var agconfig = new AgentConfigurator("RegularAgent");
-       
             ActivityInterval = agconfig.SetActivityInterval();
+            _activateTime = ActivityInterval;
 
             int strongConnectionsNumber = 0;
             int contactsNumber = 0;
@@ -32,6 +33,7 @@ namespace CDRSim.Entities.Agents
 
             var random = new Random();
             var total = 1.0;
+            var probabilitySum = 0.0;
             var usedIndices = new List<int>();
             for (int i = 0; i < contactsNumber; i++)
             {
@@ -60,53 +62,26 @@ namespace CDRSim.Entities.Agents
                     }
                 }
 
+                probabilitySum += probability;
                 total -= probability;
                
-                Contacts.Add(currentAgent, probability);
+                Contacts.Add(currentAgent, probabilitySum);
 
             }
         }
 
-        public override Call MakeCall()
+        public override Call InitiateCall(int currentTime)
         {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class AgentConfigurator
-    {
-        private string sectionName;
-        private NameValueCollection section;
-
-        public AgentConfigurator(string sectionName)
-        {
-            this.sectionName = sectionName;
-            section = (NameValueCollection)ConfigurationManager.GetSection(sectionName);
+            var agconfig = new AgentConfigurator("RegularAgent");
+            var callLength = agconfig.GetCallLength();
+            var call = base.MakeCall(currentTime, callLength);
+            return call;
         }
 
-        public int SetActivityInterval()
+        public override void UpdateActivityInterval()
         {
-            var activityMean = int.Parse(section["ActivityMean"]);
-            var activityStd = int.Parse(section["ActivityStd"]);
-            var distribution = new Normal(activityMean, activityStd);
-            var interval = distribution.Sample();
-            return (int)interval;
+            var agconfig = new AgentConfigurator("RegularAgent");
+            ActivityInterval = agconfig.SetActivityInterval();
         }
-
-        public void SetContactsConfig(ref int strongConnectionsInterval,ref int contactsNumber)
-        {
-            var contactsMean = int.Parse(section["ContactsMean"]);
-            var contactsStd = int.Parse(section["ContactsStd"]);
-            var distribution = new Normal(contactsMean, contactsStd);
-            while (contactsNumber == 0)
-            {
-                contactsNumber = (int)distribution.Sample();
-            }
-            var strongConnectionsMean = int.Parse(section["StrongConnectionsMean"]);
-            var strongConnectionsStd = int.Parse(section["StrongConnectionsStd"]);
-            distribution = new Normal(strongConnectionsMean, strongConnectionsStd);
-            strongConnectionsInterval = (int)distribution.Sample();
-        }
-
     }
 }

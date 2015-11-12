@@ -4,6 +4,7 @@ using System.Linq;
 using MathNet.Numerics.Distributions;
 using System.Configuration;
 using System.Collections.Specialized;
+using CDRSim.Helpers;
 
 namespace CDRSim.Entities.Agents
 {
@@ -18,10 +19,8 @@ namespace CDRSim.Entities.Agents
         public override void Initialize(List<Agent> agents)
         {
             var agconfig = new AgentConfigurator("Talker");
-
-            var appSettings = ConfigurationManager.AppSettings;
             ActivityInterval = agconfig.SetActivityInterval();
-            
+            _activateTime = ActivityInterval;
 
             var strongConnectionsNumber = 0;
             var contactsNumber = 0;
@@ -73,15 +72,24 @@ namespace CDRSim.Entities.Agents
                     probability += talkerPenalty;
                 }
 
-                Contacts.Add(currentAgent, probability); 
-                contactsLeft--;
                 probabilitySum += probability;
+                Contacts.Add(currentAgent, probabilitySum); 
+                contactsLeft--;
             }
         }
 
-        public override Call MakeCall()
+        public override Call InitiateCall(int currentTime)
         {
-            throw new NotImplementedException();
+            var agconfig = new AgentConfigurator("Organizer");
+            var callLength = agconfig.GetCallLength();
+            var call = base.MakeCall(currentTime, callLength);
+            return call;
+        }
+
+        public override void UpdateActivityInterval()
+        {
+            var agconfig = new AgentConfigurator("Talker");
+            ActivityInterval = agconfig.SetActivityInterval();
         }
     }
 
