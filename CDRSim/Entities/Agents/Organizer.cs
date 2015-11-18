@@ -38,6 +38,7 @@ namespace CDRSim.Entities.Agents
             var usedIndices = new List<int>();
 
             double probabilitySum = 0;
+
             for (int i = 0; i < contactsNumber; i++)
             {
                 var currentAgentIndex = random.Next(agents.Count);
