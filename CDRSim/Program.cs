@@ -2,6 +2,8 @@
 using CDRSim.Entities.Agents;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Configuration;
 using System.IO;
 
 namespace CDRSim
@@ -12,16 +14,28 @@ namespace CDRSim
         {
             var random = new Random();
 
-            var savePath = @"D:\CallData\";
+            var savePath = @"CallData\";
+            if (!Directory.Exists(savePath))
+                Directory.CreateDirectory(savePath);
 
             var agentsNumber = 1000;//random.Next(5000, 10000);
             var agents = new List<Agent>();
+            var initSection = (NameValueCollection)ConfigurationManager.GetSection("Simulation");
+            var regularAgentsPart = double.Parse(initSection["RegularAgentsPart"]);
+            var talkersPart = regularAgentsPart + double.Parse(initSection["TalkersPart"]);
+            var organizersPart = talkersPart + double.Parse(initSection["OrganizersPart"]);
             for (int i = 0; i < agentsNumber; i++)
             {
                 var choice = random.NextDouble();
-                if (choice <= 0.5) agents.Add(new RegularAgent(i));
-                if (choice > 0.5 && choice < 0.85) agents.Add(new Talker(i));
-                if (choice >= 0.85) agents.Add(new Organizer(i));
+                if (choice <= regularAgentsPart)
+                    agents.Add(new RegularAgent(i));
+                else
+                {
+                    if (choice < talkersPart)
+                        agents.Add(new Talker(i));
+                    else
+                        agents.Add(new Organizer(i));
+                }
             }
             for (int i = 0; i < agents.Count; i++)
             {
