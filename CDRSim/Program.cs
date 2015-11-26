@@ -14,16 +14,18 @@ namespace CDRSim
         {
             var random = new Random();
 
-            var savePath = @"CallData\";
+            var savePath = @"D:\CallData\";
             if (!Directory.Exists(savePath))
                 Directory.CreateDirectory(savePath);
 
             var agentsNumber = 1000;//random.Next(5000, 10000);
             var agents = new List<Agent>();
             var initSection = (NameValueCollection)ConfigurationManager.GetSection("Simulation");
-            var regularAgentsPart = double.Parse(initSection["RegularAgentsPart"]);
+            double regularAgentsPart = double.Parse(initSection["RegularAgentsPart"]);
             var talkersPart = regularAgentsPart + double.Parse(initSection["TalkersPart"]);
             var organizersPart = talkersPart + double.Parse(initSection["OrganizersPart"]);
+
+            Console.WriteLine(organizersPart);
             for (int i = 0; i < agentsNumber; i++)
             {
                 var choice = random.NextDouble();
@@ -43,31 +45,36 @@ namespace CDRSim
             }
 
             var calls = new List<Call>();
-            var simulationLength = 10000;
+            var simulationLength = 86400;
             //visualization stuff
             var callsCounter = 0;
 
             using (StreamWriter file = new System.IO.StreamWriter(savePath + "edgePerIteration.txt"))
             {
-
-                for (int i = 0; i < simulationLength; i++)
+                //for (int j = 0; j < 7; j++)
                 {
-                    foreach (var agent in agents)
+                    for (int i = 0; i < simulationLength; i++)
                     {
-                        var call = agent.Check(i);
-                        if (call != null)
+                        foreach (var agent in agents)
                         {
-                            calls.Add(call);
-                            callsCounter++;
+                            var call = agent.Check(i);
+                            if (call != null)
+                            {
+                                calls.Add(call);
+                                callsCounter++;
+                            }
+                        }
+
+                        if (i % 3600 == 0)
+                        {
+                            file.WriteLine(callsCounter);
+                        // Console.WriteLine();
                         }
                     }
 
-                    if (callsCounter > 0)
-                    {
-                        file.WriteLine(callsCounter);
-                    }
-
                 }
+
+
             }
             Console.WriteLine(agents.Count);
             Console.WriteLine(calls.Count);

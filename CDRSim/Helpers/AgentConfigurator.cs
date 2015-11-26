@@ -35,7 +35,7 @@ namespace CDRSim.Helpers
             var callLengthStd = int.Parse(section["CallLengthStd"]);
             var distribution = new Normal(callLengthMean, callLengthStd);
             var length = distribution.Sample();
-            return (int)length;
+            return Math.Abs((int)length);
         }
 
         public void SetContactsConfig(ref int strongConnectionsInterval, ref int contactsNumber)
