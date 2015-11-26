@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.IO;
+using System.Linq;
+using System.Threading;
 
 namespace CDRSim
 {
@@ -14,7 +16,7 @@ namespace CDRSim
         {
             var random = new Random();
 
-            var savePath = @"D:\CallData\";
+            var savePath = @"CallData\";
             if (!Directory.Exists(savePath))
                 Directory.CreateDirectory(savePath);
 
@@ -24,8 +26,7 @@ namespace CDRSim
             double regularAgentsPart = double.Parse(initSection["RegularAgentsPart"]);
             var talkersPart = regularAgentsPart + double.Parse(initSection["TalkersPart"]);
             var organizersPart = talkersPart + double.Parse(initSection["OrganizersPart"]);
-
-            Console.WriteLine(organizersPart);
+            
             for (int i = 0; i < agentsNumber; i++)
             {
                 var choice = random.NextDouble();
@@ -45,9 +46,10 @@ namespace CDRSim
             }
 
             var calls = new List<Call>();
-            var simulationLength = 86400;
+            var simulationLength = 8640;
             //visualization stuff
             var callsCounter = 0;
+            var agentsToCall = new List<Agent>();
 
             using (StreamWriter file = new System.IO.StreamWriter(savePath + "edgePerIteration.txt"))
             {
@@ -61,11 +63,12 @@ namespace CDRSim
                             if (call != null)
                             {
                                 calls.Add(call);
+                                agentsToCall.Add(call.To);
                                 callsCounter++;
                             }
                         }
 
-                        if (i % 3600 == 0)
+                        //if (i % 3600 == 0)
                         {
                             file.WriteLine(callsCounter);
                         // Console.WriteLine();
@@ -73,9 +76,13 @@ namespace CDRSim
                     }
 
                 }
-
-
             }
+            var groupedAgents = agentsToCall.GroupBy(a => a.Id);
+            foreach (var agent in groupedAgents)
+            {
+                Console.WriteLine("{0} {1}", agent.Key, agent.Count());
+            }
+            Console.ReadLine();
             Console.WriteLine(agents.Count);
             Console.WriteLine(calls.Count);
 

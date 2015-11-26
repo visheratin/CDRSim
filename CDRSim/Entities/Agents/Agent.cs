@@ -17,7 +17,7 @@ namespace CDRSim.Entities.Agents
         public abstract Call InitiateCall(int currentTime);
         public virtual Call MakeCall(int currentTime, int length)
         {
-            var random = new Random();
+            var random = new Random((int)DateTime.Now.ToBinary() + Id);
             Agent agentToCall = null;
             var randomValue = random.NextDouble();
             foreach (var contact in Contacts)

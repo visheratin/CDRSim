@@ -19,7 +19,9 @@ namespace CDRSim.Entities.Agents
         public override void Initialize(List<Agent> agents)
         {
             var agconfig = new AgentConfigurator("Talker");
-            ActivityInterval = agconfig.SetActivityInterval();
+            var random = new Random((int)DateTime.Now.ToBinary() + Id);
+            var activityInterval = agconfig.SetActivityInterval();
+            ActivityInterval = random.Next(activityInterval);
             _activateTime = ActivityInterval;
 
             var strongConnectionsNumber = 0;
@@ -28,7 +30,6 @@ namespace CDRSim.Entities.Agents
             agconfig.SetContactsConfig(ref strongConnectionsNumber, ref contactsNumber);
 
             var contactsLeft = contactsNumber;
-            var random = new Random();
             var strongProbabilyFractoin = 0.8;
             var strongConnectionsInterval = strongProbabilyFractoin / strongConnectionsNumber;
             var strongConnectionsIntervalMin = 0.7 * strongConnectionsInterval;

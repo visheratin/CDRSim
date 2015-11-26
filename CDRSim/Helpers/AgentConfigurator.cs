@@ -24,7 +24,7 @@ namespace CDRSim.Helpers
         {
             var activityMean = int.Parse(section["ActivityMean"]);
             var activityStd = int.Parse(section["ActivityStd"]);
-            var distribution = new Normal(activityMean, activityStd);
+            var distribution = new Poisson(activityMean);
             var interval = distribution.Sample();
             return (int)interval;
         }
@@ -33,7 +33,7 @@ namespace CDRSim.Helpers
         {
             var callLengthMean = int.Parse(section["CallLengthMean"]);
             var callLengthStd = int.Parse(section["CallLengthStd"]);
-            var distribution = new Normal(callLengthMean, callLengthStd);
+            var distribution = new Poisson(callLengthMean);
             var length = distribution.Sample();
             return Math.Abs((int)length);
         }
@@ -42,14 +42,14 @@ namespace CDRSim.Helpers
         {
             var contactsMean = int.Parse(section["ContactsMean"]);
             var contactsStd = int.Parse(section["ContactsStd"]);
-            var distribution = new Normal(contactsMean, contactsStd);
+            var distribution = new Poisson(contactsMean);
             while (contactsNumber == 0)
             {
                 contactsNumber = (int)distribution.Sample();
             }
             var strongConnectionsMean = int.Parse(section["StrongConnectionsMean"]);
             var strongConnectionsStd = int.Parse(section["StrongConnectionsStd"]);
-            distribution = new Normal(strongConnectionsMean, strongConnectionsStd);
+            distribution = new Poisson(strongConnectionsMean);
             strongConnectionsInterval = (int)distribution.Sample();
         }
 

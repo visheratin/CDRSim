@@ -19,7 +19,9 @@ namespace CDRSim.Entities.Agents
         public override void Initialize(List<Agent> agents)
         {
             var agconfig = new AgentConfigurator("Organizer");
-            ActivityInterval = agconfig.SetActivityInterval();
+            var random = new Random((int)DateTime.Now.ToBinary() + Id);
+            var activityInterval = agconfig.SetActivityInterval();
+            ActivityInterval = random.Next(activityInterval);
             _activateTime = ActivityInterval;
 
             var strongConnectionsNumber = 0;
@@ -34,7 +36,6 @@ namespace CDRSim.Entities.Agents
             var strongConnectionsIntervalDiff = strongConnectionsInterval - strongConnectionsIntervalMin;
             var averageProbabilityFraction = 1 - strongProbabilyFraction;
 
-            var random = new Random();
             var usedIndices = new List<int>();
 
             double probabilitySum = 0;
