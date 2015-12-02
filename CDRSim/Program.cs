@@ -46,7 +46,9 @@ namespace CDRSim
             }
 
             var calls = new List<Call>();
+            // Speed up 10 times for visualization. Also in App.config
             var simulationLength = 8640;
+            //var simulationLength = 86400;
             //visualization stuff
             var callsCounter = 0;
             var agentsToCall = new List<Agent>();
@@ -63,7 +65,7 @@ namespace CDRSim
                             if (call != null)
                             {
                                 calls.Add(call);
-                                agentsToCall.Add(call.To);
+                                agentsToCall.Add(call.From);
                                 callsCounter++;
                             }
                         }
@@ -80,7 +82,8 @@ namespace CDRSim
             var groupedAgents = agentsToCall.GroupBy(a => a.Id);
             foreach (var agent in groupedAgents)
             {
-                Console.WriteLine("{0} {1}", agent.Key, agent.Count());
+                var type = agent.First().GetType();
+                Console.WriteLine("{0} - {1} calls", type.Name, agent.Count());
             }
             Console.ReadLine();
             Console.WriteLine(agents.Count);
