@@ -10,6 +10,8 @@ using System.Threading;
 
 namespace CDRSim
 {
+
+
     class Program
     {
         static void Main(string[] args)
@@ -22,11 +24,13 @@ namespace CDRSim
 
             var agentsNumber = 1000;//random.Next(5000, 10000);
             var agents = new List<Agent>();
+            var informedAgents = new List<Agent>();
             var initSection = (NameValueCollection)ConfigurationManager.GetSection("Simulation");
             double regularAgentsPart = double.Parse(initSection["RegularAgentsPart"]);
             var talkersPart = regularAgentsPart + double.Parse(initSection["TalkersPart"]);
             var organizersPart = talkersPart + double.Parse(initSection["OrganizersPart"]);
-            
+            var spreadersAmount = Math.Round(agentsNumber * Information.SpreadersPart);
+
             for (int i = 0; i < agentsNumber; i++)
             {
                 var choice = random.NextDouble();
@@ -37,13 +41,27 @@ namespace CDRSim
                     if (choice < talkersPart)
                         agents.Add(new Talker(i));
                     else
-                        agents.Add(new Organizer(i));
+                    {
+                        var agent = new Organizer(i);
+
+                        if (informedAgents.Count < spreadersAmount)
+                        {
+                            agent.Aware = true;
+                            informedAgents.Add(agent);
+                        }
+                            
+                        agents.Add(agent);
+                    }
+
                 }
             }
             for (int i = 0; i < agents.Count; i++)
             {
                 agents[i].Initialize(agents);
             }
+
+            Console.WriteLine("Simulation starts with {0} aware people", informedAgents.Count);
+
 
             var calls = new List<Call>();
             // Speed up 10 times for visualization. Also in App.config
@@ -53,22 +71,72 @@ namespace CDRSim
             var callsCounter = 0;
             var agentsToCall = new List<Agent>();
 
+            // Relevance decrement stuff
+            //The attenuation coefficient
+            double betta = 0.05;
+            double amplitude = Information.Importance;
+            //double currentRelevance = 0;
+            double decrement = 0.0;
+
             using (StreamWriter file = new System.IO.StreamWriter(savePath + "edgePerIteration.txt"))
             {
                 //for (int j = 0; j < 7; j++)
                 {
-                    for (int i = 0; i < simulationLength; i++)
+                    if (Information.Mode == SimulationMode.CALLGRAPH)
                     {
-                        foreach (var agent in agents)
+                        for (int i = 0; i < simulationLength; i++)
                         {
-                            var call = agent.Check(i);
-                            if (call != null)
+
+                            foreach (var agent in agents)
                             {
-                                calls.Add(call);
-                                agentsToCall.Add(call.From);
-                                callsCounter++;
+                                var call = agent.Check(i);
+                                if (call != null)
+                                {
+                                    calls.Add(call);
+                                    agentsToCall.Add(call.From);
+                                    callsCounter++;
+                                }
                             }
                         }
+                    }
+
+                    else if (Information.Mode == SimulationMode.INFORMATIONTRANSFER)
+                    {
+                        for (int i = 0; i < simulationLength; i++)
+                        {
+                            var tempInformedAgents = new List<Agent>();
+
+                            //Relevance decrement
+                            if (i < 1000)
+                            {
+                                decrement = amplitude * Math.Exp(-betta * i / 10) * Math.Cos(i / 10);
+                                Information.Relevance = Math.Abs(decrement);
+                                //Console.WriteLine(Math.Round(Information.Relevance, 8));
+                            }
+
+                            foreach (var agent in informedAgents)
+                            {
+                                var call = agent.Check(i);
+                                if (call != null)
+                                {
+                                    calls.Add(call);
+                                    agentsToCall.Add(call.From);
+
+                                    if (!informedAgents.Contains(call.To) && call.To.Aware == true)
+                                        tempInformedAgents.Add(call.To);
+
+                                    callsCounter++;
+                                }
+
+                            }
+
+                            foreach (var agent in tempInformedAgents)
+                            {
+                                informedAgents.Add(agent);
+                            }
+
+                        }
+                    }
 
                         //if (i % 3600 == 0)
                         {
@@ -77,17 +145,17 @@ namespace CDRSim
                         }
                     }
 
-                }
+                
             }
             var groupedAgents = agentsToCall.GroupBy(a => a.Id);
             foreach (var agent in groupedAgents)
             {
                 var type = agent.First().GetType();
-                Console.WriteLine("{0} - {1} calls", type.Name, agent.Count());
+                //Console.WriteLine("{0} - {1} calls", type.Name, agent.Count());
             }
-            Console.ReadLine();
-            Console.WriteLine(agents.Count);
-            Console.WriteLine(calls.Count);
+            //Console.ReadLine();
+            //Console.WriteLine(agents.Count);
+            //Console.WriteLine(calls.Count);
 
             //Files
             using (StreamWriter file = new System.IO.StreamWriter(savePath + "edgeList.txt"))
@@ -114,6 +182,14 @@ namespace CDRSim
                     file.WriteLine(type1 + call.From.Id + " " + type2 + call.To.Id + " " + call.Length);
                 }
             }
+
+            var counter = 0;
+            foreach (var agent in agents) {
+                if (agent.Aware == true)
+                    counter++;
+            }
+            Console.WriteLine("{0} people of {1} are aware", counter, agents.Count);
+            Console.WriteLine(informedAgents.Count);
         }
     }
 }
