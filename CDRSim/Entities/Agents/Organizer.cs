@@ -24,7 +24,7 @@ namespace CDRSim.Entities.Agents
             ActivityInterval = random.Next(activityInterval);
             _activateTime = ActivityInterval;
 
-            InterestDegree = random.NextDouble() % Information.Importance;
+            InterestDegree = 0.7 + 0.3 * random.NextDouble();
 
             var strongConnectionsNumber = 0;
             var contactsNumber = 0;
@@ -74,12 +74,6 @@ namespace CDRSim.Entities.Agents
         {
             var agconfig = new AgentConfigurator("Organizer");
             var callLength = agconfig.GetCallLength();
-
-            if (Information.Mode == SimulationMode.INFORMATIONTRANSFER)
-            {
-                callLength += (int)(callLength * Information.Complexity);
-            }
-
             var call = base.MakeCall(currentTime, callLength);
             return call;
         }

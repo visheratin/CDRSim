@@ -1,11 +1,8 @@
-﻿using MathNet.Numerics.Distributions;
+﻿using CDRSim.Entities;
+using MathNet.Numerics.Distributions;
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CDRSim.Helpers
 {
@@ -26,16 +23,17 @@ namespace CDRSim.Helpers
             var activityStd = int.Parse(section["ActivityStd"]);
             var distribution = new Poisson(activityMean);
             var interval = distribution.Sample();
-            return (int)interval;
+            return interval;
         }
 
         public int GetCallLength()
         {
+            Poisson distribution;
             var callLengthMean = int.Parse(section["CallLengthMean"]);
             var callLengthStd = int.Parse(section["CallLengthStd"]);
-            var distribution = new Poisson(callLengthMean);
+            distribution = new Poisson(callLengthMean);
             var length = distribution.Sample();
-            return Math.Abs((int)length);
+            return Math.Abs(length);
         }
 
         public void SetContactsConfig(ref int strongConnectionsInterval, ref int contactsNumber)

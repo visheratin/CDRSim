@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MathNet.Numerics.Distributions;
-using System.Configuration;
-using System.Collections.Specialized;
 using CDRSim.Helpers;
+using CDRSim.Simulation;
 
 namespace CDRSim.Entities.Agents
 {
@@ -27,7 +25,7 @@ namespace CDRSim.Entities.Agents
             int strongConnectionsNumber = 0;
             int contactsNumber = 0;
 
-            InterestDegree = random.NextDouble() % Information.Importance;
+            InterestDegree = random.NextDouble();
 
             agconfig.SetContactsConfig(ref strongConnectionsNumber, ref contactsNumber);
 
@@ -77,12 +75,6 @@ namespace CDRSim.Entities.Agents
         {
             var agconfig = new AgentConfigurator("RegularAgent");
             var callLength = agconfig.GetCallLength();
-
-            if (Information.Mode == SimulationMode.INFORMATIONTRANSFER)
-            {
-                callLength += (int)(callLength * Information.Complexity);
-            }
-
             var call = base.MakeCall(currentTime, callLength);
             return call;
         }

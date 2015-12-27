@@ -27,7 +27,7 @@ namespace CDRSim.Entities.Agents
             var strongConnectionsNumber = 0;
             var contactsNumber = 0;
 
-            InterestDegree = random.NextDouble() % Information.Importance;
+            InterestDegree = 0.3 + 0.7 * random.NextDouble();
 
             agconfig.SetContactsConfig(ref strongConnectionsNumber, ref contactsNumber);
 
@@ -85,12 +85,6 @@ namespace CDRSim.Entities.Agents
         {
             var agconfig = new AgentConfigurator("Organizer");
             int callLength = agconfig.GetCallLength();
-
-            if (Information.Mode == SimulationMode.INFORMATIONTRANSFER)
-            {
-                callLength += (int)(callLength * Information.Complexity);
-            }
-
             var call = base.MakeCall(currentTime, callLength);
             return call;
         }

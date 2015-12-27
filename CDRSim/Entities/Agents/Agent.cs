@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CDRSim.Simulation;
+using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace CDRSim.Entities.Agents
@@ -35,7 +37,6 @@ namespace CDRSim.Entities.Agents
                         agentToCall = contact.Key;
                         agentToCallTie = contact.Value;
                     }
-                        
                     break;
                 }
             }
@@ -43,14 +44,25 @@ namespace CDRSim.Entities.Agents
             {
                 if (this is Talker && agentToCall is Talker)
                     length *= 3;
+                if (Information.Mode == SimulationMode.Information)
+                {
+                    if (this.Aware)
+                    {
+                        var transferProbability = GetInfoTransferProbability(currentTime, agentToCallTie);
+                        randomValue = random.NextDouble();
+                        if (randomValue < transferProbability)
+                        {
+                            agentToCall.Aware = true;
+                            length += Information.GetInfoTransferTime();
+                        }
+                    }
+                }
                 var call = new Call(this, agentToCall, currentTime, length);
                 _callEndTime = currentTime + length;
                 Busy = true;
                 agentToCall.Busy = true;
                 UpdateActivityInterval();
                 _activateTime = _callEndTime + ActivityInterval;
-                if (Information.Mode == SimulationMode.INFORMATIONTRANSFER)
-                    agentToCall.ReceiveInformation(Information.Importance, Information.Relevance, Information.Complexity, agentToCallTie);
                 return call;
             }
             return null;
@@ -66,28 +78,12 @@ namespace CDRSim.Entities.Agents
                 return null;
         }
 
-        public virtual void ReceiveInformation(double trandferProbability, double relevance, double complexity, double contactTie)
+        public virtual double GetInfoTransferProbability(int currentTime, double agentsConnection)
         {
-
-            var choice = random.NextDouble();
-            if (choice <= trandferProbability)
-            {
-                if (trandferProbability >= 0.85 && relevance >= InterestDegree)
-                {
-                    Aware = true;
-                }
-
-                else
-                {
-                    if (contactTie > 0.5)
-                    {
-                        Aware = true;
-                    }
-                }
-
-            }
-                
-
+            var relativeAgentImportance = agentsConnection / Contacts.Max(a => a.Value);
+            var result = Information.GetRevenance(currentTime) + Information.Importance + InterestDegree + relativeAgentImportance;
+            result /= 4;
+            return result;
         }
     }
 }

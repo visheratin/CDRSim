@@ -1,20 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using MathNet.Numerics.Distributions;
+using System;
 using System.Collections.Specialized;
 using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace CDRSim.Entities
+namespace CDRSim.Simulation
 {
-    enum SimulationMode
-    {
-        CALLGRAPH,
-        INFORMATIONTRANSFER
-    }
-
-    class Information
+    public static class Information
     {
         public static double Importance     { get; set; }
         public static double Relevance      { get; set; }
@@ -29,16 +20,27 @@ namespace CDRSim.Entities
 
             initSection = (NameValueCollection)ConfigurationManager.GetSection("Information");
             Importance = double.Parse(initSection["Importance"]);
-            Relevance = 0; //double.Parse(initSection["Relevance"]);
+            Relevance = double.Parse(initSection["Relevance"]);
             Complexity = double.Parse(initSection["Complexity"]);
             SpreadersPart = double.Parse(initSection["SpreadersPart"]);
 
             Console.WriteLine(Importance);
             Console.WriteLine(Relevance);
             Console.WriteLine(Complexity);
-
             Console.WriteLine(Mode);
         }
-  
+
+        public static double GetRevenance(int time)
+        {
+            var result = 1 / Math.Exp(time / 100);
+            return result;
+        }
+
+        public static int GetInfoTransferTime()
+        {
+            var distribution = new Poisson(Complexity);
+            var length = distribution.Sample();
+            return Math.Abs(length);
+        }
     }
 }
