@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using CDRSim.Entities.Agents;
+using System.IO;
 
 namespace CDRSim.Simulation
 {
@@ -11,6 +12,7 @@ namespace CDRSim.Simulation
         private Network network;
         private int simulationLength;
         public List<Call> Calls;
+
 
         public CallsNetworkSimulation(int simulationLength = 8640, int agentsNumber = 1000)
         {
@@ -31,19 +33,31 @@ namespace CDRSim.Simulation
 
         public void Run()
         {
-            for (int i = 0; i < simulationLength; i++)
+            var savePath = @"CallData\";
+            using (StreamWriter file = new StreamWriter(savePath + "informedAgents.txt"))
             {
-                foreach (var agent in network.Agents)
+
+                for (int i = 0; i < simulationLength; i++)
                 {
-                    var call = agent.Check(i);
-                    if (call != null)
+                    var counter = 0;
+                    foreach (var agent in network.Agents)
                     {
-                        Calls.Add(call);
+                        var call = agent.Check(i);
+                        if (call != null)
+                        {
+                            Calls.Add(call);
+                            //counter++;
+                        }
                     }
-                }
-                if (i % 100 == 0)
-                {
-                    Console.WriteLine("Informed {0} agents of {1}", network.Agents.Count(a => a.Aware), network.Agents.Count);
+                    //if (i % 100 == 0)
+                    {
+
+
+
+                        //Console.WriteLine(i);
+                        //Console.WriteLine("Informed {0} agents of {1}", network.Agents.Count(a => a.Aware), network.Agents.Count);
+                    }
+                    file.WriteLine("{0} {1}", i, network.Agents.Count(a => a.Aware));
                 }
             }
         }

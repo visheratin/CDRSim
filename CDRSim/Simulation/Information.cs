@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.IO;
 
 namespace CDRSim.Simulation
 {
@@ -32,7 +33,14 @@ namespace CDRSim.Simulation
 
         public static double GetRevenance(int time)
         {
-            var result = 1 / Math.Exp(time / 100);
+            time -= 4200;
+            var result = 1 / (1 + Math.Exp(time/500));
+
+            //using (StreamWriter file = new StreamWriter("time.txt", true))
+            //{
+            //    file.WriteLine(time + " " + result);
+            //}
+
             return result;
         }
 

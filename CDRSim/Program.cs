@@ -23,7 +23,8 @@ namespace CDRSim
             var simulationLength = 8640;
             var simulation = new CallsNetworkSimulation(simulationLength, agentsNumber);
             simulation.Run();
-            Console.ReadLine();
+            //Console.ReadLine();
+            Console.WriteLine("End");
             using (StreamWriter file = new StreamWriter(savePath + "edgePerIteration.txt"))
             {
                 file.WriteLine(simulation.Calls.Count);

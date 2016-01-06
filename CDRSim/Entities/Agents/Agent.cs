@@ -1,6 +1,7 @@
 ﻿using CDRSim.Simulation;
 using System;
 using System.Linq;
+using System.IO;
 using System.Collections.Generic;
 
 namespace CDRSim.Entities.Agents
@@ -81,8 +82,21 @@ namespace CDRSim.Entities.Agents
         public virtual double GetInfoTransferProbability(int currentTime, double agentsConnection)
         {
             var relativeAgentImportance = agentsConnection / Contacts.Max(a => a.Value);
-            var result = Information.GetRevenance(currentTime) + Information.Importance + InterestDegree + relativeAgentImportance;
-            result /= 4;
+            //var result = Information.GetRevenance(currentTime) + Information.Importance + InterestDegree + relativeAgentImportance;
+            //result /= 4;
+
+            var result = Information.GetRevenance(currentTime) + Information.Importance * 0.045 + InterestDegree * 0.02 + relativeAgentImportance * 0.02;
+
+            //using (StreamWriter file = new StreamWriter("prob.txt", true))
+            //{
+            //    file.WriteLine(result);
+            //}
+
+            //if (currentTime < 1000) {
+            //    Console.WriteLine(Information.Importance);
+            //    Console.WriteLine(InterestDegree);
+            //    Console.WriteLine(relativeAgentImportance);
+            //}
             return result;
         }
     }
