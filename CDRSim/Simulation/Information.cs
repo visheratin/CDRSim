@@ -1,4 +1,5 @@
-﻿using MathNet.Numerics.Distributions;
+﻿using CDRSim.Experiments;
+using MathNet.Numerics.Distributions;
 using System;
 using System.Collections.Specialized;
 using System.Configuration;
@@ -16,14 +17,12 @@ namespace CDRSim.Simulation
 
         static Information()
         {
-            var initSection = (NameValueCollection)ConfigurationManager.GetSection("Simulation");
-            Mode = (SimulationMode)int.Parse(initSection["SimulationMode"]);
-
-            initSection = (NameValueCollection)ConfigurationManager.GetSection("Information");
-            Importance = double.Parse(initSection["Importance"]);
-            Relevance = double.Parse(initSection["Relevance"]);
-            Complexity = double.Parse(initSection["Complexity"]);
-            SpreadersPart = double.Parse(initSection["SpreadersPart"]);
+            Mode = ExperimentGlobal.Instance.Parameters.Simulation.SimulationMode;
+            
+            Importance = ExperimentGlobal.Instance.Parameters.Information.Importance;
+            Relevance = ExperimentGlobal.Instance.Parameters.Information.Relevance;
+            Complexity = ExperimentGlobal.Instance.Parameters.Information.Complexity;
+            SpreadersPart = ExperimentGlobal.Instance.Parameters.Information.SpreadersPart;
 
             Console.WriteLine(Importance);
             Console.WriteLine(Relevance);

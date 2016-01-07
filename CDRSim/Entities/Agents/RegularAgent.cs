@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CDRSim.Helpers;
 using CDRSim.Simulation;
+using CDRSim.Parameters;
 
 namespace CDRSim.Entities.Agents
 {
@@ -16,7 +17,7 @@ namespace CDRSim.Entities.Agents
 
         public override void Initialize(List<Agent> agents)
         {
-            var agconfig = new AgentConfigurator("RegularAgent");
+            var agconfig = new AgentConfigurator(AgentType.Regular);
             var random = new Random((int)DateTime.Now.ToBinary() + Id);
             var activityInterval = agconfig.SetActivityInterval();
             ActivityInterval = random.Next(activityInterval);
@@ -73,7 +74,7 @@ namespace CDRSim.Entities.Agents
 
         public override Call InitiateCall(int currentTime)
         {
-            var agconfig = new AgentConfigurator("RegularAgent");
+            var agconfig = new AgentConfigurator(AgentType.Regular);
             var callLength = agconfig.GetCallLength();
             var call = base.MakeCall(currentTime, callLength);
             return call;
@@ -81,7 +82,7 @@ namespace CDRSim.Entities.Agents
 
         public override void UpdateActivityInterval()
         {
-            var agconfig = new AgentConfigurator("RegularAgent");
+            var agconfig = new AgentConfigurator(AgentType.Regular);
             ActivityInterval = agconfig.SetActivityInterval();
         }
     }

@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CDRSim.Simulation
+namespace CDRSim.Parameters
 {
-    [Serializable]
-    public enum SimulationMode
+    public enum AgentType
     {
-        Call,
-        Information
+        Regular,
+        Talker,
+        Organizer
     }
 }

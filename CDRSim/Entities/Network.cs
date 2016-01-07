@@ -1,8 +1,10 @@
 ﻿using CDRSim.Entities.Agents;
+using CDRSim.Experiments;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Linq;
 
 namespace CDRSim.Entities
 {
@@ -14,10 +16,12 @@ namespace CDRSim.Entities
         {
             var random = new Random();
             Agents = new List<Agent>();
-            var initSection = (NameValueCollection)ConfigurationManager.GetSection("Simulation");
-            double regularAgentsPart = double.Parse(initSection["RegularAgentsPart"]);
-            var talkersPart = regularAgentsPart + double.Parse(initSection["TalkersPart"]);
-            var organizersPart = talkersPart + double.Parse(initSection["OrganizersPart"]);
+            double regularAgentsPart = ExperimentGlobal.Instance.Parameters.Simulation
+                .AgentTypes.First(a => a.Key == "RegularAgent").Value;
+            var talkersPart = regularAgentsPart + ExperimentGlobal.Instance.Parameters.Simulation
+                .AgentTypes.First(a => a.Key == "Talker").Value;
+            var organizersPart = talkersPart + ExperimentGlobal.Instance.Parameters.Simulation
+                .AgentTypes.First(a => a.Key == "Organizer").Value;
             for (int i = 0; i < agentsNumber; i++)
             {
                 var choice = random.NextDouble();

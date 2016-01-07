@@ -1,30 +1,30 @@
 ﻿using CDRSim.Entities.Agents;
+using CDRSim.Experiments;
+using CDRSim.Parameters;
 using CDRSim.Simulation;
 using System;
+using System.Collections.Specialized;
+using System.Configuration;
 using System.IO;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace CDRSim
 {
-
-
     class Program
     {
         static void Main(string[] args)
         {
             var random = new Random();
+            ExperimentGlobal.Instance.Init("RealTimeExperiment");
 
             var savePath = @"CallData\";
             if (!Directory.Exists(savePath))
                 Directory.CreateDirectory(savePath);
 
-            var agentsNumber = 1000;
-            
-            // Speed up 10 times for visualization. Also in App.config
-            var simulationLength = 8640;
-            var simulation = new CallsNetworkSimulation(simulationLength, agentsNumber);
+            var simulation = new CallsNetworkSimulation(ExperimentGlobal.Instance.Parameters.Simulation.SimulationLength, 
+                ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber);
             simulation.Run();
-            //Console.ReadLine();
-            Console.WriteLine("End");
             using (StreamWriter file = new StreamWriter(savePath + "edgePerIteration.txt"))
             {
                 file.WriteLine(simulation.Calls.Count);

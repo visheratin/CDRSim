@@ -5,6 +5,7 @@ using MathNet.Numerics.Distributions;
 using System.Configuration;
 using System.Collections.Specialized;
 using CDRSim.Helpers;
+using CDRSim.Parameters;
 
 namespace CDRSim.Entities.Agents
 {
@@ -18,7 +19,7 @@ namespace CDRSim.Entities.Agents
 
         public override void Initialize(List<Agent> agents)
         {
-            var agconfig = new AgentConfigurator("Talker");
+            var agconfig = new AgentConfigurator(AgentType.Talker);
             var random = new Random((int)DateTime.Now.ToBinary() + Id);
             var activityInterval = agconfig.SetActivityInterval();
             ActivityInterval = random.Next(activityInterval);
@@ -83,7 +84,7 @@ namespace CDRSim.Entities.Agents
 
         public override Call InitiateCall(int currentTime)
         {
-            var agconfig = new AgentConfigurator("Organizer");
+            var agconfig = new AgentConfigurator(AgentType.Talker);
             int callLength = agconfig.GetCallLength();
             var call = base.MakeCall(currentTime, callLength);
             return call;
@@ -91,7 +92,7 @@ namespace CDRSim.Entities.Agents
 
         public override void UpdateActivityInterval()
         {
-            var agconfig = new AgentConfigurator("Talker");
+            var agconfig = new AgentConfigurator(AgentType.Talker);
             ActivityInterval = agconfig.SetActivityInterval();
         }
     }

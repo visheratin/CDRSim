@@ -1,26 +1,26 @@
 ﻿using CDRSim.Entities;
+using CDRSim.Experiments;
+using CDRSim.Parameters;
 using MathNet.Numerics.Distributions;
 using System;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Linq;
 
 namespace CDRSim.Helpers
 {
     public class AgentConfigurator
     {
-        private string sectionName;
-        private NameValueCollection section;
+        AgentParameters parameters;
 
-        public AgentConfigurator(string sectionName)
+        public AgentConfigurator(AgentType type)
         {
-            this.sectionName = sectionName;
-            section = (NameValueCollection)ConfigurationManager.GetSection(sectionName);
+            parameters = ExperimentGlobal.Instance.Parameters.Agents.First(a => a.Type == type);
         }
 
         public int SetActivityInterval()
         {
-            var activityMean = int.Parse(section["ActivityMean"]);
-            var activityStd = int.Parse(section["ActivityStd"]);
+            var activityMean = parameters.ActivityMean;
             var distribution = new Poisson(activityMean);
             var interval = distribution.Sample();
             return interval;
@@ -29,8 +29,7 @@ namespace CDRSim.Helpers
         public int GetCallLength()
         {
             Poisson distribution;
-            var callLengthMean = int.Parse(section["CallLengthMean"]);
-            var callLengthStd = int.Parse(section["CallLengthStd"]);
+            var callLengthMean = parameters.CallLengthMean;
             distribution = new Poisson(callLengthMean);
             var length = distribution.Sample();
             return Math.Abs(length);
@@ -38,15 +37,13 @@ namespace CDRSim.Helpers
 
         public void SetContactsConfig(ref int strongConnectionsInterval, ref int contactsNumber)
         {
-            var contactsMean = int.Parse(section["ContactsMean"]);
-            var contactsStd = int.Parse(section["ContactsStd"]);
+            var contactsMean = parameters.ContactsMean;
             var distribution = new Poisson(contactsMean);
             while (contactsNumber == 0)
             {
                 contactsNumber = (int)distribution.Sample();
             }
-            var strongConnectionsMean = int.Parse(section["StrongConnectionsMean"]);
-            var strongConnectionsStd = int.Parse(section["StrongConnectionsStd"]);
+            var strongConnectionsMean = parameters.StrongConnectionsMean;
             distribution = new Poisson(strongConnectionsMean);
             strongConnectionsInterval = (int)distribution.Sample();
         }

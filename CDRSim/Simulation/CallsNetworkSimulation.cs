@@ -4,6 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 using CDRSim.Entities.Agents;
 using System.IO;
+using CDRSim.Experiments;
 
 namespace CDRSim.Simulation
 {
@@ -16,6 +17,7 @@ namespace CDRSim.Simulation
 
         public CallsNetworkSimulation(int simulationLength = 8640, int agentsNumber = 1000)
         {
+            var p = ExperimentGlobal.Instance.Parameters;
             this.simulationLength = simulationLength;
             network = new Network(agentsNumber);
             InitializeAwareAgents();
@@ -39,23 +41,13 @@ namespace CDRSim.Simulation
 
                 for (int i = 0; i < simulationLength; i++)
                 {
-                    var counter = 0;
                     foreach (var agent in network.Agents)
                     {
                         var call = agent.Check(i);
                         if (call != null)
                         {
                             Calls.Add(call);
-                            //counter++;
                         }
-                    }
-                    //if (i % 100 == 0)
-                    {
-
-
-
-                        //Console.WriteLine(i);
-                        //Console.WriteLine("Informed {0} agents of {1}", network.Agents.Count(a => a.Aware), network.Agents.Count);
                     }
                     file.WriteLine("{0} {1}", i, network.Agents.Count(a => a.Aware));
                 }
