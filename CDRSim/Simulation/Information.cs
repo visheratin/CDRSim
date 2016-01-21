@@ -14,6 +14,7 @@ namespace CDRSim.Simulation
         public static double Complexity     { get; set; }
         public static double SpreadersPart { get; set; }
         public static SimulationMode Mode   { get; set; }
+        public static double Spreaders         { get; set; }
 
         static Information()
         {
@@ -23,6 +24,7 @@ namespace CDRSim.Simulation
             Relevance = ExperimentGlobal.Instance.Parameters.Information.Relevance;
             Complexity = ExperimentGlobal.Instance.Parameters.Information.Complexity;
             SpreadersPart = ExperimentGlobal.Instance.Parameters.Information.SpreadersPart;
+            Spreaders = ExperimentGlobal.Instance.Parameters.Information.Spreaders;
 
             Console.WriteLine(Importance);
             Console.WriteLine(Relevance);
@@ -32,8 +34,8 @@ namespace CDRSim.Simulation
 
         public static double GetRevenance(int time)
         {
-            time -= 4200;
-            var result = 1 / (1 + Math.Exp(time/500));
+            time -= 42000;
+            var result = 1 / (1 + Math.Exp(time/5000));
 
             //using (StreamWriter file = new StreamWriter("time.txt", true))
             //{

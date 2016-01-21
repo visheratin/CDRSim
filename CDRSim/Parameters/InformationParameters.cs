@@ -13,5 +13,6 @@ namespace CDRSim.Parameters
         public double Relevance;
         public double Complexity;
         public double SpreadersPart;
+        public double Spreaders;
     }
 }

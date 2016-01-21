@@ -43,6 +43,7 @@ namespace CDRSim.Entities.Agents
             }
             if (agentToCall != null)
             {
+                var calltransfer = false;
                 if (this is Talker && agentToCall is Talker)
                     length *= 3;
                 if (Information.Mode == SimulationMode.Information)
@@ -54,6 +55,7 @@ namespace CDRSim.Entities.Agents
                         if (randomValue < transferProbability)
                         {
                             agentToCall.Aware = true;
+                            calltransfer = true;
                             length += Information.GetInfoTransferTime();
                         }
                     }
@@ -64,6 +66,8 @@ namespace CDRSim.Entities.Agents
                 agentToCall.Busy = true;
                 UpdateActivityInterval();
                 _activateTime = _callEndTime + ActivityInterval;
+                if (calltransfer)
+                    call.Transfer = 1;
                 return call;
             }
             return null;
@@ -85,7 +89,11 @@ namespace CDRSim.Entities.Agents
             //var result = Information.GetRevenance(currentTime) + Information.Importance + InterestDegree + relativeAgentImportance;
             //result /= 4;
 
-            var result = Information.GetRevenance(currentTime) + Information.Importance * 0.045 + InterestDegree * 0.02 + relativeAgentImportance * 0.02;
+            var result = Information.GetRevenance(currentTime) + Information.Importance + InterestDegree + relativeAgentImportance;
+
+           //result = Math.Sqrt(result);
+
+            result /= 3;
 
             //using (StreamWriter file = new StreamWriter("prob.txt", true))
             //{
