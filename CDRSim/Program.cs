@@ -5,7 +5,9 @@ using CDRSim.Simulation;
 using System;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -16,25 +18,52 @@ namespace CDRSim
 
         static void Main(string[] args)
         {
-
-            var random = new Random();
-            string name = "10percentorganizers";
-
-            ExperimentGlobal.Instance.Init(name);
-
             var savePath = @"CallData";
             if (!Directory.Exists(savePath))
                 Directory.CreateDirectory(savePath);
 
-            for (int i = 0; i < 1; i++)
+            var random = new Random();
+            string name = "RealExperiment";
+
+            for (int percentage = 5; percentage <= 95; percentage+=5)
             {
-                //int i = 0;
-                var simulation = new CallsNetworkSimulation(ExperimentGlobal.Instance.Parameters.Simulation.SimulationLength,
-ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber);
-                simulation.Run(i, name);
-                Console.WriteLine(i);
-                Console.WriteLine("End");
+                ExperimentGlobal.Instance.Init(name);
+                var timer = new Stopwatch();
+                ExperimentGlobal.Instance.Parameters.Information.Spreaders = 0;
+                ExperimentGlobal.Instance.Parameters.Information.SpreadersPart = percentage / 100.0;
+                var organizersPart = ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["Organizer"];
+                var otherAgentsRatio = Math.Round(ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["RegularAgent"] /
+                    ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["Talker"], 0);
+                var maxAgentChange = Math.Round(otherAgentsRatio / (otherAgentsRatio + 1), 2);
+                var minAgentChange = Math.Round(1 / (otherAgentsRatio + 1), 2);
+                var difference = 0.0;
+                var currentPercentage = percentage / 100.0;
+                if(currentPercentage > organizersPart)
+                {
+                    difference = currentPercentage - organizersPart;
+                    ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["Organizer"] = currentPercentage;
+                    ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["RegularAgent"] -= difference * maxAgentChange;
+                    ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["Talker"] -= difference * minAgentChange;
+                }
+                timer.Start();
+                var tasks = new Task[1];
+                for (int i = 0; i < 1; i++)
+                {
+                    var index = i;
+                    tasks[i] = (new TaskFactory()).StartNew(() =>
+                    {
+                        var simulation = new CallsNetworkSimulation(ExperimentGlobal.Instance.Parameters.Simulation.SimulationLength,
+                        ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber);
+                        var saveName = string.Format("{0}_{1}", index, percentage);
+                        simulation.Run(saveName);
+                    });
+                }
+                Task.WaitAll(tasks);
+                timer.Stop();
+                Console.WriteLine(timer.ElapsedMilliseconds/1000);
             }
+
+            
 
 
             //Files

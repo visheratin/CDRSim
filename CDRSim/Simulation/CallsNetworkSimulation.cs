@@ -26,37 +26,28 @@ namespace CDRSim.Simulation
 
         private void InitializeAwareAgents()
         {
+            IEnumerable<Agent> agents = null;
             if (Information.Spreaders == 0)
             {
-                var organizers = network.Agents.Where(a => a is Organizer);
-                foreach (var agent in organizers)
-                {
-                    agent.Aware = true;
-                }
+                agents = network.Agents.Where(a => a is Organizer);
             }
-
             else if (Information.Spreaders == 1)
             {
+                agents = network.Agents.Where(a => a is RegularAgent);
+            }
+            else if (Information.Spreaders == 2)
+            {
+                agents = network.Agents.Where(a => a is Talker);
+            }
 
-                var rand = new Random();
-                var regulars = network.Agents.Where(a => a is RegularAgent);
-                var c = 0;
-                var percentOfSpreaders = Information.SpreadersPart / 100;
-                double fate = (100 / (78 / percentOfSpreaders));
-                fate /= 100;
-                Console.WriteLine(fate);
-
-                foreach (var agent in regulars)
-                {
-                    var choice = rand.NextDouble();
-                    if (choice < fate)
-                    {
-                        agent.Aware = true;
-                        c++;
-                    }
-                }
-                Console.WriteLine(c);
-
+            var rand = new Random();
+            var agentsToAware = (int)(ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber * Information.SpreadersPart);
+            while (agentsToAware > 0)
+            {
+                var notAwareAgents = agents.Where(a => !a.Aware);
+                var index = rand.Next(0, notAwareAgents.Count());
+                notAwareAgents.ElementAt(index).Aware = true;
+                agentsToAware--;
             }
 
 
@@ -79,12 +70,11 @@ namespace CDRSim.Simulation
 
         }
 
-        public void Run(int c, string name)
+        public void Run(string name)
         {
             var savePath = @"CallData\";
-            using (StreamWriter file = new StreamWriter(savePath + Information.Importance + name + c + ".txt"))
+            using (StreamWriter file = new StreamWriter(savePath + name + ".txt"))
             {
-
                 for (int i = 0; i < simulationLength; i++)
                 {
                     foreach (var agent in network.Agents)
