@@ -30,23 +30,33 @@ namespace CDRSim.Entities.Agents
 
             agconfig.SetContactsConfig(ref strongConnectionsNumber, ref contactsNumber);
 
+            var contactsLeft = contactsNumber;
             var strongConnectionsInterval = 0.75 / strongConnectionsNumber;
             var strongConnectionsIntervalMin = 0.8 * strongConnectionsInterval;
             var strongConnectionsIntervalDiff = strongConnectionsInterval - strongConnectionsIntervalMin;
 
             var total = 1.0;
             var probabilitySum = 0.0;
-            var usedIndices = new List<int>();
+            var usedAgents = new List<Agent>();
             for (int i = 0; i < contactsNumber; i++)
             {
-                var currentAgentIndex = random.Next(agents.Count);
-                if (usedIndices.Contains(currentAgentIndex))
+                Agent currentAgent = null;
+                var getContact = random.NextDouble();
+                var contactAgents = agents.Where(a => a.Contacts.Keys.Contains(this)).ToList();
+                if (getContact > 0.8 && contactAgents.Count > 0)
+                {
+                    currentAgent = contactAgents[random.Next(0, contactAgents.Count() - 1)];
+                }
+                else
+                {
+                    currentAgent = agents.ElementAt(random.Next(agents.Count - 1));
+                }
+                if (usedAgents.Contains(currentAgent))
                 {
                     i--;
                     continue;
                 }
-                usedIndices.Add(currentAgentIndex);
-                var currentAgent = agents.ElementAt(currentAgentIndex);
+                usedAgents.Add(currentAgent);
                 var probability = 0.0;
                 if (i < strongConnectionsNumber)
                 {
@@ -56,11 +66,12 @@ namespace CDRSim.Entities.Agents
                 {
                     if (i == contactsNumber - 1)
                     {
-                        probability = total;
+                        probability = 1 - probabilitySum;
                     }
+
                     else
                     {
-                        probability = 0.2 * total;
+                        probability = (1 - probabilitySum) / contactsLeft;
                     }
                 }
 
@@ -68,6 +79,7 @@ namespace CDRSim.Entities.Agents
                 total -= probability;
                
                 Contacts.Add(currentAgent, probabilitySum);
+                contactsLeft--;
 
             }
         }

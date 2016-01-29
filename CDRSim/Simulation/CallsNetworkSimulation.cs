@@ -17,7 +17,6 @@ namespace CDRSim.Simulation
 
         public CallsNetworkSimulation(int simulationLength, int agentsNumber)
         {
-            var p = ExperimentGlobal.Instance.Parameters;
             this.simulationLength = simulationLength;
             network = new Network(agentsNumber);
             InitializeAwareAgents();
@@ -41,13 +40,21 @@ namespace CDRSim.Simulation
             }
 
             var rand = new Random();
-            var agentsToAware = (int)(ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber * Information.SpreadersPart);
+            var agentsToAware = (int)(ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber * 
+                ExperimentGlobal.Instance.Parameters.Information.SpreadersPart);
             while (agentsToAware > 0)
             {
                 var notAwareAgents = agents.Where(a => !a.Aware);
-                var index = rand.Next(0, notAwareAgents.Count());
-                notAwareAgents.ElementAt(index).Aware = true;
-                agentsToAware--;
+                if (notAwareAgents.Count() > 0)
+                {
+                    var index = rand.Next(0, notAwareAgents.Count());
+                    notAwareAgents.ElementAt(index).Aware = true;
+                    agentsToAware--;
+                }
+                else
+                {
+                    break;
+                }
             }
 
 
@@ -73,37 +80,24 @@ namespace CDRSim.Simulation
         public void Run(string name)
         {
             var savePath = @"CallData\";
+            var dumpData = new Dictionary<int, int>();
+            for (int i = 0; i < simulationLength; i++)
+            {
+                foreach (var agent in network.Agents)
+                {
+                    var call = agent.Check(i);
+                    if (call != null)
+                    {
+                        Calls.Add(call);
+                    }
+                }
+                dumpData.Add(i, network.Agents.Count(a => a.Aware));
+            }
             using (StreamWriter file = new StreamWriter(savePath + name + ".txt"))
             {
-                for (int i = 0; i < simulationLength; i++)
+                foreach (var item in dumpData)
                 {
-                    foreach (var agent in network.Agents)
-                    {
-                        var call = agent.Check(i);
-                        if (call != null)
-                        {
-                            Calls.Add(call);
-                        }
-                    }
-
-                    //using (StreamWriter file1 = new StreamWriter(savePath + "\\edgePerIteration.txt", true))
-                    //{
-                    //    file1.WriteLine(Calls.Count);
-                    //}
-                    ////using (StreamWriter file1 = new StreamWriter(savePath + "\\organizers.txt", true))
-                    ////{
-                    ////    file1.WriteLine("{0} {1}", i, network.Agents.Count(a => a.Aware && a is Organizer));
-                    ////}
-                    ////using (StreamWriter file1 = new StreamWriter(savePath + "\\regulars.txt", true))
-                    ////{
-                    ////    file1.WriteLine("{0} {1}", i, network.Agents.Count(a => a.Aware && a is RegularAgent));
-                    ////}
-                    ////using (StreamWriter file1 = new StreamWriter(savePath + "\\talkers.txt", true))
-                    ////{
-                    ////    file1.WriteLine("{0} {1}", i, network.Agents.Count(a => a.Aware && a is Talker));
-                    ////}
-
-                    file.WriteLine("{0} {1}", i, network.Agents.Count(a => a.Aware));
+                    file.WriteLine("{0} {1}", item.Key, item.Value);
                 }
             }
         }

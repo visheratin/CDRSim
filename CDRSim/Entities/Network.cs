@@ -29,7 +29,7 @@ namespace CDRSim.Entities
                     Agents.Add(new RegularAgent(i));
                 else
                 {
-                    if (choice < talkersPart)
+                    if (choice <= talkersPart)
                         Agents.Add(new Talker(i));
                     else
                     {

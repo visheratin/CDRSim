@@ -52,7 +52,7 @@ namespace CDRSim.Entities.Agents
                     {
                         var transferProbability = GetInfoTransferProbability(currentTime, agentToCallTie);
                         randomValue = random.NextDouble();
-                        if (randomValue < transferProbability)
+                        if (transferProbability > 0.5)
                         {
                             agentToCall.Aware = true;
                             calltransfer = true;
@@ -93,7 +93,7 @@ namespace CDRSim.Entities.Agents
 
            //result = Math.Sqrt(result);
 
-            result /= 3;
+            result /= 4;
 
             //using (StreamWriter file = new StreamWriter("prob.txt", true))
             //{
