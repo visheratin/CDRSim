@@ -34,16 +34,15 @@ namespace CDRSim.Entities.Agents
             var strongConnectionsInterval = 0.75 / strongConnectionsNumber;
             var strongConnectionsIntervalMin = 0.8 * strongConnectionsInterval;
             var strongConnectionsIntervalDiff = strongConnectionsInterval - strongConnectionsIntervalMin;
-
-            var total = 1.0;
+            
             var probabilitySum = 0.0;
             var usedAgents = new List<Agent>();
+            var contactAgents = agents.Where(a => a.Contacts.Keys.Contains(this) && !this.Contacts.Keys.Contains(a)).ToList();
             for (int i = 0; i < contactsNumber; i++)
             {
                 Agent currentAgent = null;
                 var getContact = random.NextDouble();
-                var contactAgents = agents.Where(a => a.Contacts.Keys.Contains(this)).ToList();
-                if (getContact > 0.8 && contactAgents.Count > 0)
+                if (getContact > 0.3 && contactAgents.Count > 0)
                 {
                     currentAgent = contactAgents[random.Next(0, contactAgents.Count() - 1)];
                 }
@@ -53,7 +52,6 @@ namespace CDRSim.Entities.Agents
                 }
                 if (usedAgents.Contains(currentAgent))
                 {
-                    i--;
                     continue;
                 }
                 usedAgents.Add(currentAgent);
@@ -75,9 +73,7 @@ namespace CDRSim.Entities.Agents
                     }
                 }
 
-                probabilitySum += probability;
-                total -= probability;
-               
+                probabilitySum += probability;               
                 Contacts.Add(currentAgent, probabilitySum);
                 contactsLeft--;
 

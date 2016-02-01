@@ -2,8 +2,6 @@
 using CDRSim.Experiments;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Configuration;
 using System.Linq;
 
 namespace CDRSim.Entities
@@ -16,7 +14,7 @@ namespace CDRSim.Entities
         {
             var random = new Random();
             Agents = new List<Agent>();
-            double regularAgentsPart = ExperimentGlobal.Instance.Parameters.Simulation
+            var regularAgentsPart = ExperimentGlobal.Instance.Parameters.Simulation
                 .AgentTypes.First(a => a.Key == "RegularAgent").Value;
             var talkersPart = regularAgentsPart + ExperimentGlobal.Instance.Parameters.Simulation
                 .AgentTypes.First(a => a.Key == "Talker").Value;
@@ -24,19 +22,17 @@ namespace CDRSim.Entities
                 .AgentTypes.First(a => a.Key == "Organizer").Value;
             for (int i = 0; i < agentsNumber; i++)
             {
-                var choice = random.NextDouble();
-                if (choice <= regularAgentsPart)
+                if (i <= regularAgentsPart*agentsNumber)
                     Agents.Add(new RegularAgent(i));
                 else
                 {
-                    if (choice <= talkersPart)
+                    if (i <= talkersPart * agentsNumber)
                         Agents.Add(new Talker(i));
                     else
                     {
                         var agent = new Organizer(i);
                         Agents.Add(agent);
                     }
-
                 }
             }
             for (int i = 0; i < Agents.Count; i++)

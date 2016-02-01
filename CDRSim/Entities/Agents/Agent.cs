@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.IO;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace CDRSim.Entities.Agents
 {
@@ -25,24 +26,18 @@ namespace CDRSim.Entities.Agents
         public abstract Call InitiateCall(int currentTime);
         public virtual Call MakeCall(int currentTime, int length)
         {
+            var timer = new Stopwatch();
+            timer.Start();
             var random = new Random((int)DateTime.Now.ToBinary() + Id);
             Agent agentToCall = null;
             double agentToCallTie = 0;
             var randomValue = random.NextDouble();
-            foreach (var contact in Contacts)
+            var contact = Contacts.FirstOrDefault(c => c.Value >= randomValue);
+            if (contact.Key != null && !contact.Key.Busy)
             {
-                if (randomValue < contact.Value)
-                {
-                    if (!contact.Key.Busy)
-                    {
-                        agentToCall = contact.Key;
-                        agentToCallTie = contact.Value;
-                    }
-                    break;
-                }
-            }
-            if (agentToCall != null)
-            {
+                agentToCall = contact.Key;
+                agentToCallTie = contact.Value;
+                timer.Restart();
                 var calltransfer = false;
                 if (this is Talker && agentToCall is Talker)
                     length *= 3;
@@ -86,25 +81,9 @@ namespace CDRSim.Entities.Agents
         public virtual double GetInfoTransferProbability(int currentTime, double agentsConnection)
         {
             var relativeAgentImportance = agentsConnection / Contacts.Max(a => a.Value);
-            //var result = Information.GetRevenance(currentTime) + Information.Importance + InterestDegree + relativeAgentImportance;
-            //result /= 4;
-
             var result = Information.GetRevenance(currentTime) + Information.Importance + InterestDegree + relativeAgentImportance;
-
-           //result = Math.Sqrt(result);
-
             result /= 4;
-
-            //using (StreamWriter file = new StreamWriter("prob.txt", true))
-            //{
-            //    file.WriteLine(result);
-            //}
-
-            //if (currentTime < 1000) {
-            //    Console.WriteLine(Information.Importance);
-            //    Console.WriteLine(InterestDegree);
-            //    Console.WriteLine(relativeAgentImportance);
-            //}
+            //Console.WriteLine(result);
             return result;
         }
     }

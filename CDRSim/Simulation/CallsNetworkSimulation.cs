@@ -26,17 +26,17 @@ namespace CDRSim.Simulation
         private void InitializeAwareAgents()
         {
             IEnumerable<Agent> agents = null;
-            if (Information.Spreaders == 0)
+            if (ExperimentGlobal.Instance.Parameters.Information.Spreaders == 0)
             {
                 agents = network.Agents.Where(a => a is Organizer);
             }
-            else if (Information.Spreaders == 1)
-            {
-                agents = network.Agents.Where(a => a is RegularAgent);
-            }
-            else if (Information.Spreaders == 2)
+            else if (ExperimentGlobal.Instance.Parameters.Information.Spreaders == 1)
             {
                 agents = network.Agents.Where(a => a is Talker);
+            }
+            else if (ExperimentGlobal.Instance.Parameters.Information.Spreaders == 2)
+            {
+                agents = network.Agents.Where(a => a is RegularAgent);
             }
 
             var rand = new Random();
@@ -56,30 +56,10 @@ namespace CDRSim.Simulation
                     break;
                 }
             }
-
-
-            //one agent
-            //var organizers = network.Agents.Where(a => a is Organizer);
-            //var counter = 0;
-
-            //foreach (var agent in organizers)
-            //{
-            //    if (counter == 1)
-            //    {
-            //        agent.Aware = true;
-
-            //    }
-            //    counter++;
-
-            //}
-
-
-
         }
 
         public void Run(string name)
         {
-            var savePath = @"CallData\";
             var dumpData = new Dictionary<int, int>();
             for (int i = 0; i < simulationLength; i++)
             {
@@ -93,7 +73,7 @@ namespace CDRSim.Simulation
                 }
                 dumpData.Add(i, network.Agents.Count(a => a.Aware));
             }
-            using (StreamWriter file = new StreamWriter(savePath + name + ".txt"))
+            using (StreamWriter file = new StreamWriter(name + ".txt"))
             {
                 foreach (var item in dumpData)
                 {
