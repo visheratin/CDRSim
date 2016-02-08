@@ -102,7 +102,7 @@ namespace CDRSim.Entities.Agents
                     {
                         var transferProbability = GetInfoTransferProbability(currentTime, agentToCallTie);
                         randomValue = random.NextDouble();
-                        if (transferProbability > 0.5)
+                        if (randomValue < transferProbability)
                         {
                             agentToCall.Aware = true;
                             calltransfer = true;
