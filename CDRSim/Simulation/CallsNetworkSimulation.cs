@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using CDRSim.Entities.Agents;
 using System.IO;
 using CDRSim.Experiments;
+using System.Threading.Tasks;
 
 namespace CDRSim.Simulation
 {
@@ -73,6 +74,40 @@ namespace CDRSim.Simulation
                 }
                 dumpData.Add(i, network.Agents.Count(a => a.Aware));
             }
+
+            //var dumpData = new Dictionary<int, int>();
+            //var taskAgents = new List<int>[Environment.ProcessorCount];
+            //for (int j = 0; j < taskAgents.Length; j++)
+            //{
+            //    taskAgents[j] = new List<int>();
+            //}
+            //var counter = 0;
+            //while (counter < network.Agents.Count)
+            //{
+            //    taskAgents[counter % Environment.ProcessorCount].Add(counter);
+            //    counter++;
+            //}
+            //var tasks = new Task[Environment.ProcessorCount];
+            //for (int i = 0; i < simulationLength; i++)
+            //{
+            //    for (int j = 0; j < Environment.ProcessorCount; j++)
+            //    {
+            //        var agentsList = taskAgents[j];
+            //        tasks[j] = Task.Factory.StartNew(() =>
+            //        {
+            //            foreach (var agent in agentsList)
+            //            {
+            //                var call = network.Agents[agent].Check(i);
+            //                if (call != null)
+            //                {
+            //                    Calls.Add(call);
+            //                }
+            //            }
+            //        });
+            //    }
+            //    Task.WaitAll(tasks);
+            //    dumpData.Add(i, network.Agents.Count(a => a.Aware));
+            //}
             using (StreamWriter file = new StreamWriter(name + ".txt"))
             {
                 foreach (var item in dumpData)

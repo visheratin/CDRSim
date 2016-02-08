@@ -21,9 +21,12 @@ namespace CDRSim.Helpers
         public int SetActivityInterval()
         {
             var activityMean = parameters.ActivityMean;
-            var distribution = new Poisson(activityMean);
-            var interval = distribution.Sample();
-            return interval;
+            var activityStd = parameters.ActivityStd;
+            var distribution = new Normal(activityMean, activityStd);
+            var interval = -1.0;
+            while(interval < 0)
+                interval = distribution.Sample();
+            return (int)interval;
         }
 
         public int GetCallLength()

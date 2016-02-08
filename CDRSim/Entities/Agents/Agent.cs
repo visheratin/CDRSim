@@ -4,6 +4,9 @@ using System.Linq;
 using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Collections.Concurrent;
+using CDRSim.Helpers;
+using CDRSim.Parameters;
 
 namespace CDRSim.Entities.Agents
 {
@@ -17,17 +20,70 @@ namespace CDRSim.Entities.Agents
         public double InterestDegree { get; set; }
         public bool Busy { get; set; }
         public bool Aware { get; set; }
+        public Call CurrentCall { get; set; }
 
+        public abstract void Initialize(BlockingCollection<Agent> agents);
 
-        Random random = new Random();
+        public virtual void Create(BlockingCollection<Agent> agents, AgentType type,
+            double strongProbabilyFraction, double strongConnectionsIntervalPercent)
+        {
+            var agconfig = new AgentConfigurator(type);
+            var random = new Random((int)DateTime.Now.ToBinary() + Id);
+            ActivityInterval = agconfig.SetActivityInterval();
+            _activateTime = ActivityInterval;
 
-        public abstract void Initialize(List<Agent> agents);
+            var strongConnectionsNumber = 0;
+            var contactsNumber = 0;
+
+            agconfig.SetContactsConfig(ref strongConnectionsNumber, ref contactsNumber);
+
+            var contactsLeft = contactsNumber;
+            var strongConnectionsInterval = strongProbabilyFraction / strongConnectionsNumber;
+            var strongConnectionsIntervalMin = strongConnectionsIntervalPercent * strongConnectionsInterval;
+            var strongConnectionsIntervalDiff = strongConnectionsInterval - strongConnectionsIntervalMin;
+
+            var usedAgents = new List<Agent>();
+
+            double probabilitySum = 0;
+
+            var contactAgents = agents.Where(a => a.Contacts.Keys.Contains(this) && !Contacts.Keys.Contains(a)).ToList();
+            for (int i = 0; i < contactsNumber; i++)
+            {
+                Agent currentAgent = null;
+                var getContact = random.NextDouble();
+                if (getContact > 0.3 && contactAgents.Count > 0)
+                {
+                    currentAgent = contactAgents[random.Next(0, contactAgents.Count() - 1)];
+                }
+                else
+                {
+                    currentAgent = agents.ElementAt(random.Next(agents.Count - 1));
+                }
+                if (usedAgents.Contains(currentAgent))
+                {
+                    continue;
+                }
+                usedAgents.Add(currentAgent);
+                var probability = 0.0;
+
+                if (i < strongConnectionsNumber)
+                {
+                    probability = strongConnectionsIntervalMin + random.NextDouble() * strongConnectionsIntervalDiff;
+                }
+                else
+                {
+                    probability = (1 - probabilitySum) / contactsLeft;
+                }
+
+                probabilitySum += probability;
+                Contacts.Add(currentAgent, probabilitySum);
+                contactsLeft--;
+            }
+        }
         public abstract void UpdateActivityInterval();
         public abstract Call InitiateCall(int currentTime);
         public virtual Call MakeCall(int currentTime, int length)
         {
-            var timer = new Stopwatch();
-            timer.Start();
             var random = new Random((int)DateTime.Now.ToBinary() + Id);
             Agent agentToCall = null;
             double agentToCallTie = 0;
@@ -37,7 +93,6 @@ namespace CDRSim.Entities.Agents
             {
                 agentToCall = contact.Key;
                 agentToCallTie = contact.Value;
-                timer.Restart();
                 var calltransfer = false;
                 if (this is Talker && agentToCall is Talker)
                     length *= 3;
@@ -57,12 +112,14 @@ namespace CDRSim.Entities.Agents
                 }
                 var call = new Call(this, agentToCall, currentTime, length);
                 _callEndTime = currentTime + length;
+                agentToCall._callEndTime = currentTime + length;
                 Busy = true;
                 agentToCall.Busy = true;
                 UpdateActivityInterval();
                 _activateTime = _callEndTime + ActivityInterval;
                 if (calltransfer)
                     call.Transfer = 1;
+                CurrentCall = call;
                 return call;
             }
             return null;
@@ -70,10 +127,16 @@ namespace CDRSim.Entities.Agents
  
         public virtual Call Check(int currentTime)
         {
-            if (currentTime >= _callEndTime)
-                Busy = false;
-            if (currentTime >= _activateTime)
+            if (CurrentCall != null && currentTime >= _callEndTime)
+            {
+                CurrentCall.From.Busy = false;
+                CurrentCall.To.Busy = false;
+                CurrentCall = null;
+            }
+            if (!Busy && currentTime >= _activateTime)
+            {
                 return InitiateCall(currentTime);
+            }
             else
                 return null;
         }

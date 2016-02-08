@@ -1,8 +1,10 @@
 ﻿using CDRSim.Entities.Agents;
 using CDRSim.Experiments;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace CDRSim.Entities
 {
@@ -35,10 +37,36 @@ namespace CDRSim.Entities
                     }
                 }
             }
-            for (int i = 0; i < Agents.Count; i++)
+            var tasks = new Task[Environment.ProcessorCount];
+            var taskAgents = new List<int>[Environment.ProcessorCount];
+            for (int i = 0; i < taskAgents.Length; i++)
             {
-                Agents[i].Initialize(Agents);
+                taskAgents[i] = new List<int>();
             }
+            var counter = 0;
+            while(counter < Agents.Count)
+            {
+                taskAgents[counter % Environment.ProcessorCount].Add(counter);
+                counter++;
+            }
+            var parallelAgents = new BlockingCollection<Agent>();
+            foreach (var agent in Agents)
+            {
+                parallelAgents.Add(agent);
+            }
+            for (int i = 0; i < Environment.ProcessorCount; i++)
+            {
+                var agentsList = taskAgents[i];
+                tasks[i] = Task.Factory.StartNew(() =>
+                {
+                    foreach (var agent in agentsList)
+                    {
+                        parallelAgents.ElementAt(agent).Initialize(parallelAgents);
+                    }
+                });
+            }
+            Task.WaitAll(tasks);
+            Agents = parallelAgents.ToList();
         }
     }
 }
