@@ -23,7 +23,7 @@ namespace CDRSim
                 Directory.CreateDirectory(savePath);
 
             var random = new Random();
-            string name = "RealExperiment";
+            string name = "VisExperiment";
 
             var timer = new Stopwatch();
             timer.Start();

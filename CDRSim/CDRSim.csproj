@@ -73,6 +73,7 @@
     <Compile Include="Entities\Agents\Talker.cs" />
     <Compile Include="Entities\Call.cs" />
     <Compile Include="Entities\ExperimentGlobal.cs" />
+    <Compile Include="Helpers\FileWriter.cs" />
     <Compile Include="Helpers\XmlSerializableDictionary.cs" />
     <Compile Include="Parameters\AgentParameters.cs" />
     <Compile Include="Parameters\AgentType.cs" />
@@ -108,6 +109,7 @@
   <ItemGroup>
     <Content Include="config.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
