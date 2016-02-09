@@ -67,6 +67,8 @@ namespace CDRSim.Entities
             }
             Task.WaitAll(tasks);
             Agents = parallelAgents.ToList();
+            var maxContacts = Agents.Max(a => a.Contacts.Count);
+            var t = maxContacts;
         }
     }
 }

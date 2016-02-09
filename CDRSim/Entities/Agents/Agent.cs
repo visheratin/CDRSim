@@ -36,7 +36,6 @@ namespace CDRSim.Entities.Agents
             var contactsNumber = 0;
 
             agconfig.SetContactsConfig(ref strongConnectionsNumber, ref contactsNumber);
-
             var contactsLeft = contactsNumber;
             var strongConnectionsInterval = strongProbabilyFraction / strongConnectionsNumber;
             var strongConnectionsIntervalMin = strongConnectionsIntervalPercent * strongConnectionsInterval;
@@ -61,6 +60,7 @@ namespace CDRSim.Entities.Agents
                 }
                 if (usedAgents.Contains(currentAgent))
                 {
+                    i--;
                     continue;
                 }
                 usedAgents.Add(currentAgent);
