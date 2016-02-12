@@ -11,6 +11,7 @@ namespace CDRSim.Entities.Agents
         public Talker(int id)
         {
             Id = id;
+            Type = AgentType.Talker;
             Contacts = new Dictionary<Agent, double>();
         }
 

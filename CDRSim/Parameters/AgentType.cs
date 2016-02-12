@@ -8,6 +8,7 @@ namespace CDRSim.Parameters
 {
     public enum AgentType
     {
+        All,
         Regular,
         Talker,
         Organizer

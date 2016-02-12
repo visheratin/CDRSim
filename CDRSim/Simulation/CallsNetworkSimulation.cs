@@ -7,6 +7,8 @@ using System.IO;
 using CDRSim.Experiments;
 using CDRSim.Helpers;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
+using CDRSim.Parameters;
 
 namespace CDRSim.Simulation
 {
@@ -14,7 +16,7 @@ namespace CDRSim.Simulation
     {
         private Network network;
         private int simulationLength;
-        public List<Call> Calls;
+        public BlockingCollection<Call> Calls;
 
 
         public CallsNetworkSimulation(int simulationLength, int agentsNumber)
@@ -22,7 +24,7 @@ namespace CDRSim.Simulation
             this.simulationLength = simulationLength;
             network = new Network(agentsNumber);
             InitializeAwareAgents();
-            Calls = new List<Call>();
+            Calls = new BlockingCollection<Call>();
         }
 
         private void InitializeAwareAgents()
@@ -42,7 +44,7 @@ namespace CDRSim.Simulation
             }
 
             var rand = new Random();
-            var agentsToAware = (int)(ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber * 
+            var agentsToAware = (int)(ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber *
                 ExperimentGlobal.Instance.Parameters.Information.SpreadersPart);
             while (agentsToAware > 0)
             {
@@ -60,9 +62,9 @@ namespace CDRSim.Simulation
             }
         }
 
-        public void Run(string name)
+        public void Run(string name, bool inParallel=false)
         {
-            //var dumpData = new Dictionary<int, int>();
+            //var dumpData = new List<int>();
             //for (int i = 0; i < simulationLength; i++)
             //{
             //    foreach (var agent in network.Agents)
@@ -73,28 +75,84 @@ namespace CDRSim.Simulation
             //            Calls.Add(call);
             //        }
             //    }
-            //    dumpData.Add(i, network.Agents.Count(a => a.Aware));
+            //    dumpData.Add(network.Agents.Count(a => a.Aware));
             //}
-
-            var dumpData = new Dictionary<int, int>();
-            var taskAgents = new List<int>[Environment.ProcessorCount];
-            for (int j = 0; j < taskAgents.Length; j++)
-            {
-                taskAgents[j] = new List<int>();
-            }
-            var counter = 0;
-            while (counter < network.Agents.Count)
-            {
-                taskAgents[counter % Environment.ProcessorCount].Add(counter);
-                counter++;
-            }
-            var tasks = new Task[Environment.ProcessorCount];
-
+            //using (StreamWriter file = new StreamWriter(name + ".txt"))
+            //{
+            //    for (int i = 0; i < dumpData.Count; i++)
+            //    {
+            //        file.WriteLine("{0} {1}", i, dumpData[i]);
+            //    }
+            //}
+            
+            var dumpData = new int[simulationLength][];
             var fw = new FileWriter(name);
-            fw.WriteContacts(network);
+
+            if (!inParallel)
+            {
+                for (int i = 0; i < simulationLength; i++)
+                {
+                    int[] callInfo = new int[4];
+                    foreach (var agent in network.Agents)
+                    {
+                        var call = agent.Check(i);
+                        if (call != null)
+                        {
+                            Calls.Add(call);
+                            if (call.Transfer == 1)
+                            {
+                                switch (call.From.Type)
+                                {
+                                    case AgentType.Organizer:
+                                        callInfo[1]++;
+                                        break;
+                                    case AgentType.Regular:
+                                        callInfo[2]++;
+                                        break;
+                                    case AgentType.Talker:
+                                        callInfo[3]++;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                    callInfo[0] = network.Agents.Count(a => a.Aware);
+                    if(i > 0)
+                    {
+                        callInfo[1] += dumpData[i - 1][1];
+                        callInfo[2] += dumpData[i - 1][2];
+                        callInfo[3] += dumpData[i - 1][3];
+                    }
+                    dumpData[i] = callInfo;
+                    //fw.CallsCount.Add(Calls.Count);
+                }
+                fw.WriteDumpData(dumpData);
+                GC.Collect();
+                //fw.WriteCallsCount();
+                //fw.WriteCallsData(Calls);
+            }
+            else
+            {
+                var taskAgents = new List<int>[Environment.ProcessorCount];
+                for (int j = 0; j < taskAgents.Length; j++)
+                {
+                    taskAgents[j] = new List<int>();
+                }
+                var counter = 0;
+                while (counter < network.Agents.Count)
+                {
+                    taskAgents[counter % Environment.ProcessorCount].Add(counter);
+                    counter++;
+                }
+                var tasks = new Task[Environment.ProcessorCount];
+
+                fw.WriteContacts(network);
 
                 for (int i = 0; i < simulationLength; i++)
                 {
+                    int[] callInfoTotal = new int[4];
                     for (int j = 0; j < Environment.ProcessorCount; j++)
                     {
                         var agentsList = taskAgents[j];
@@ -111,25 +169,19 @@ namespace CDRSim.Simulation
                         });
                     }
 
-                    fw.CallsCount.Add(Calls.Count);
                     Task.WaitAll(tasks);
-
-                    //using (StreamWriter file = new StreamWriter(name + ".txt", true))
-                    //{
-                    //    file.WriteLine("{0} {1}", i, network.Agents.Count(a => a.Aware));
-                    //}
+                    callInfoTotal[0] = network.Agents.Count(a => a.Aware);
+                    //callInfoTotal[1] = Calls.Count(c => c.Transfer == 1 && c.Start <= i && c.From.Type == AgentType.Regular);
+                    //callInfoTotal[2] = Calls.Count(c => c.Transfer == 1 && c.Start <= i && c.From.Type == AgentType.Talker);
+                    //callInfoTotal[3] = Calls.Count(c => c.Transfer == 1 && c.Start <= i && c.From.Type == AgentType.Organizer);
+                    dumpData[i] = callInfoTotal;
+                    fw.CallsCount.Add(Calls.Count);
                 }
-
-            fw.WriteCallsCount();
-            fw.WriteCallsData(Calls);
-
-            //using (StreamWriter file = new StreamWriter(name + ".txt", true))
-            //{
-            //    foreach (var item in dumpData)
-            //    {
-            //        file.WriteLine("{0} {1}", item.Key, item.Value);
-            //    }
-            //}
+                fw.WriteDumpData(dumpData);
+                fw.WriteCallsCount();
+                fw.WriteCallsData(Calls);
+            }
+            
         }
     }
 }

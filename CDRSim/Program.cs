@@ -21,21 +21,25 @@ namespace CDRSim
             var savePath = @"CallData\";
             if (!Directory.Exists(savePath))
                 Directory.CreateDirectory(savePath);
-
             var random = new Random();
-            string name = "VisExperiment";
 
+            string name = "VisExperiment";
             var timer = new Stopwatch();
             timer.Start();
             ExperimentGlobal.Instance.Init(name);
-            var simulation = new CallsNetworkSimulation(ExperimentGlobal.Instance.Parameters.Simulation.SimulationLength,
+            for (int i = 0; i < 50; i++)
+            {
+                var simulation = new CallsNetworkSimulation(ExperimentGlobal.Instance.Parameters.Simulation.SimulationLength,
                         ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber);
-            var saveName = "test";
-            simulation.Run(saveName);
+                var saveName = "test" + i.ToString();
+                simulation.Run(saveName, true);
+            }
             timer.Stop();
             Console.WriteLine("Total: {0}", timer.ElapsedMilliseconds);
             Console.ReadLine();
 
+
+            //string name = "RealExperiment";
             //for (int spreaders = 0; spreaders <= 2; spreaders++)
             //{
             //    var spreadersFolder = savePath + spreaders.ToString() + "\\";
@@ -45,7 +49,8 @@ namespace CDRSim
             //    }
             //    for (int percentage = 5; percentage <= 95; percentage += 5)
             //    {
-            //        var percentageFolder = spreadersFolder + percentage.ToString() + "%\\";
+            //        var percentageString = String.Format("{0:00}", percentage);
+            //        var percentageFolder = spreadersFolder + percentageString + "%\\";
             //        if (!Directory.Exists(percentageFolder))
             //        {
             //            Directory.CreateDirectory(percentageFolder);

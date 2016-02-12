@@ -13,6 +13,7 @@ namespace CDRSim.Entities.Agents
     public abstract class Agent
     {
         public int Id { get; set; }
+        public AgentType Type { get; set; }
         public Dictionary<Agent, double> Contacts { get; set; }
         public int ActivityInterval { get; set; }
         public int _activateTime { get; set; }
@@ -27,6 +28,16 @@ namespace CDRSim.Entities.Agents
         public virtual void Create(BlockingCollection<Agent> agents, AgentType type,
             double strongProbabilyFraction, double strongConnectionsIntervalPercent)
         {
+            var agentIndex = 0;
+            for (int i = 0; i < agents.Count; i++)
+            {
+                if(agents.ElementAt(i).Id == this.Id)
+                {
+                    agentIndex = i;
+                    break;
+                }
+            }
+
             var agconfig = new AgentConfigurator(type);
             var random = new Random((int)DateTime.Now.ToBinary() + Id);
             ActivityInterval = agconfig.SetActivityInterval();
@@ -36,16 +47,45 @@ namespace CDRSim.Entities.Agents
             var contactsNumber = 0;
 
             agconfig.SetContactsConfig(ref strongConnectionsNumber, ref contactsNumber);
-            var contactsLeft = contactsNumber;
             var strongConnectionsInterval = strongProbabilyFraction / strongConnectionsNumber;
             var strongConnectionsIntervalMin = strongConnectionsIntervalPercent * strongConnectionsInterval;
             var strongConnectionsIntervalDiff = strongConnectionsInterval - strongConnectionsIntervalMin;
-
-            var usedAgents = new List<Agent>();
-
+            var contactsLeft = contactsNumber;
             double probabilitySum = 0;
 
-            var contactAgents = agents.Where(a => a.Contacts.Keys.Contains(this) && !Contacts.Keys.Contains(a)).ToList();
+            var usedAgents = new List<Agent>();
+            usedAgents.Add(this);
+            //for (int i = agentIndex-2; i < agentIndex+3; i++)
+            //{
+            //    if (i == agentIndex || i < 0 || i > agents.Count-1)
+            //        continue;
+            //    var currentAgent = agents.ElementAt(i);
+            //    usedAgents.Add(currentAgent);
+            //    var probability = 0.0;
+
+            //    if (i < strongConnectionsNumber)
+            //    {
+            //        probability = strongConnectionsIntervalMin + random.NextDouble() * strongConnectionsIntervalDiff;
+            //    }
+            //    else
+            //    {
+            //        probability = (1 - probabilitySum) / contactsLeft;
+            //    }
+
+            //    probabilitySum += probability;
+            //    Contacts.Add(currentAgent, probabilitySum);
+            //    contactsLeft--;
+            //}
+
+            List<Agent> contactAgents = null;
+            while (contactAgents == null)
+            {
+                try
+                {
+                    contactAgents = agents.Where(a => a.Contacts.Keys.Contains(this) && !Contacts.Keys.Contains(a)).ToList();
+                }
+                catch { }
+            }
             for (int i = 0; i < contactsNumber; i++)
             {
                 Agent currentAgent = null;
@@ -98,7 +138,7 @@ namespace CDRSim.Entities.Agents
                     length *= 3;
                 if (Information.Mode == SimulationMode.Information)
                 {
-                    if (this.Aware)
+                    if (Aware && !agentToCall.Aware)
                     {
                         var transferProbability = GetInfoTransferProbability(currentTime, agentToCallTie);
                         randomValue = random.NextDouble();

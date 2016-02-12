@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.IO;
 using CDRSim.Entities;
 using CDRSim.Entities.Agents;
+using System.Collections.Concurrent;
+using CDRSim.Parameters;
 
 namespace CDRSim.Helpers
 {
@@ -18,6 +20,18 @@ namespace CDRSim.Helpers
         {
             SaveName = savename;
             CallsCount = new List<int>();
+        }
+
+        public void WriteDumpData(int[][] data)
+        {
+            using (StreamWriter file = new StreamWriter(SaveName + ".txt"))
+            {
+                for (int i = 0; i < data.Length; i++)
+                {
+                    var item = data[i];
+                    file.WriteLine("{0} {1} {2} {3} {4}", i, item.ElementAt(0), item.ElementAt(1), item.ElementAt(2), item.ElementAt(3));
+                }
+            }
         }
 
         public void WriteContacts(Network network)
@@ -55,7 +69,7 @@ namespace CDRSim.Helpers
             }
         }
 
-        public void WriteCallsData(List<Call> Calls)
+        public void WriteCallsData(IEnumerable<Call> Calls)
         {
             using (StreamWriter file = new StreamWriter(SaveName + "edgeList.txt"))
             {

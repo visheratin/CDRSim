@@ -11,6 +11,7 @@ namespace CDRSim.Entities.Agents
         public RegularAgent(int id)
         {
             Id = id;
+            Type = AgentType.Regular;
             Contacts = new Dictionary<Agent, double>();
         }
 
