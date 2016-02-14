@@ -13,6 +13,7 @@ namespace CDRSim.Experiments
         private static ExperimentGlobal instance;
         public ExperimentParameters Parameters { get; private set; }
         public string Name { get; private set; }
+        public double ContactProbability { get; set; }
 
         private ExperimentGlobal() { }
 
@@ -32,6 +33,7 @@ namespace CDRSim.Experiments
         {
             Parameters = new ExperimentParameters(name);
             Name = name;
+            ContactProbability = 0.3;
         }
 
     }

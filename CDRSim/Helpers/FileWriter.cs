@@ -22,14 +22,14 @@ namespace CDRSim.Helpers
             CallsCount = new List<int>();
         }
 
-        public void WriteDumpData(int[][] data)
+        public void WriteDumpData(int[] data)
         {
             using (StreamWriter file = new StreamWriter(SaveName + ".txt"))
             {
                 for (int i = 0; i < data.Length; i++)
                 {
                     var item = data[i];
-                    file.WriteLine("{0} {1} {2} {3} {4}", i, item.ElementAt(0), item.ElementAt(1), item.ElementAt(2), item.ElementAt(3));
+                    file.WriteLine("{0}", item);
                 }
             }
         }
@@ -51,7 +51,7 @@ namespace CDRSim.Helpers
 
                     foreach (var cont in agent.Contacts)
                     {
-                        file.Write(cont.Key.Id + " ");
+                        file.Write(cont.Id + " ");
                     }
                     file.Write("\n");
                 }

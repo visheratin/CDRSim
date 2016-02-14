@@ -14,7 +14,7 @@ namespace CDRSim.Simulation
 {
     public class CallsNetworkSimulation
     {
-        private Network network;
+        public Network network;
         private int simulationLength;
         public BlockingCollection<Call> Calls;
 
@@ -44,26 +44,19 @@ namespace CDRSim.Simulation
             }
 
             var rand = new Random();
-            var agentsToAware = (int)(ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber *
-                ExperimentGlobal.Instance.Parameters.Information.SpreadersPart);
-            while (agentsToAware > 0)
+            var agentsToAware = agents.Take((int)(ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber *
+                ExperimentGlobal.Instance.Parameters.Information.SpreadersPart)).ToArray();
+            foreach (var agent in agentsToAware)
             {
-                var notAwareAgents = agents.Where(a => !a.Aware);
-                if (notAwareAgents.Count() > 0)
-                {
-                    var index = rand.Next(0, notAwareAgents.Count());
-                    notAwareAgents.ElementAt(index).Aware = true;
-                    agentsToAware--;
-                }
-                else
-                {
-                    break;
-                }
+                agent.Aware = true;
             }
         }
 
-        public void Run(string name, bool inParallel=false)
+        public void Run(string name, bool inParallel = false)
         {
+            Console.WriteLine("Started simulation");
+            var fw = new FileWriter(name);
+            //fw.WriteContacts(network);
             //var dumpData = new List<int>();
             //for (int i = 0; i < simulationLength; i++)
             //{
@@ -84,48 +77,49 @@ namespace CDRSim.Simulation
             //        file.WriteLine("{0} {1}", i, dumpData[i]);
             //    }
             //}
-            
-            var dumpData = new int[simulationLength][];
-            var fw = new FileWriter(name);
+
+            var dumpData = new int[simulationLength];
+            //var fw = new FileWriter(name);
 
             if (!inParallel)
             {
                 for (int i = 0; i < simulationLength; i++)
                 {
-                    int[] callInfo = new int[4];
+                    //int[] callInfo = new int[4];
                     foreach (var agent in network.Agents)
                     {
                         var call = agent.Check(i);
                         if (call != null)
                         {
                             Calls.Add(call);
-                            if (call.Transfer == 1)
-                            {
-                                switch (call.From.Type)
-                                {
-                                    case AgentType.Organizer:
-                                        callInfo[1]++;
-                                        break;
-                                    case AgentType.Regular:
-                                        callInfo[2]++;
-                                        break;
-                                    case AgentType.Talker:
-                                        callInfo[3]++;
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
+                            //if (call.Transfer == 1)
+                            //{
+                            //    switch (call.From.Type)
+                            //    {
+                            //        case AgentType.Organizer:
+                            //            callInfo[1]++;
+                            //            break;
+                            //        case AgentType.Regular:
+                            //            callInfo[2]++;
+                            //            break;
+                            //        case AgentType.Talker:
+                            //            callInfo[3]++;
+                            //            break;
+                            //        default:
+                            //            break;
+                            //    }
+                            //}
                         }
                     }
-                    callInfo[0] = network.Agents.Count(a => a.Aware);
-                    if(i > 0)
-                    {
-                        callInfo[1] += dumpData[i - 1][1];
-                        callInfo[2] += dumpData[i - 1][2];
-                        callInfo[3] += dumpData[i - 1][3];
-                    }
-                    dumpData[i] = callInfo;
+                    //callInfo[0] = network.Agents.Count(a => a.Aware);
+                    //if(i > 0)
+                    //{
+                    //    callInfo[1] += dumpData[i - 1][1];
+                    //    callInfo[2] += dumpData[i - 1][2];
+                    //    callInfo[3] += dumpData[i - 1][3];
+                    //}
+                    //dumpData[i] = callInfo;
+                    dumpData[i] = network.Agents.Count(a => a.Aware);
                     //fw.CallsCount.Add(Calls.Count);
                 }
                 fw.WriteDumpData(dumpData);
@@ -148,7 +142,7 @@ namespace CDRSim.Simulation
                 }
                 var tasks = new Task[Environment.ProcessorCount];
 
-                fw.WriteContacts(network);
+                //fw.WriteContacts(network);
 
                 for (int i = 0; i < simulationLength; i++)
                 {
@@ -170,18 +164,19 @@ namespace CDRSim.Simulation
                     }
 
                     Task.WaitAll(tasks);
-                    callInfoTotal[0] = network.Agents.Count(a => a.Aware);
+                    //callInfoTotal[0] = network.Agents.Count(a => a.Aware);
                     //callInfoTotal[1] = Calls.Count(c => c.Transfer == 1 && c.Start <= i && c.From.Type == AgentType.Regular);
                     //callInfoTotal[2] = Calls.Count(c => c.Transfer == 1 && c.Start <= i && c.From.Type == AgentType.Talker);
                     //callInfoTotal[3] = Calls.Count(c => c.Transfer == 1 && c.Start <= i && c.From.Type == AgentType.Organizer);
-                    dumpData[i] = callInfoTotal;
-                    fw.CallsCount.Add(Calls.Count);
+                    //dumpData[i] = callInfoTotal;
+                    dumpData[i] = network.Agents.Count(a => a.Aware); ;
+                    //fw.CallsCount.Add(Calls.Count);
                 }
                 fw.WriteDumpData(dumpData);
-                fw.WriteCallsCount();
-                fw.WriteCallsData(Calls);
+                //fw.WriteCallsCount();
+                //fw.WriteCallsData(Calls);
             }
-            
+
         }
     }
 }

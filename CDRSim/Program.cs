@@ -10,6 +10,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
+using System.Linq;
 
 namespace CDRSim
 {
@@ -23,19 +24,17 @@ namespace CDRSim
                 Directory.CreateDirectory(savePath);
             var random = new Random();
 
-            string name = "VisExperiment";
+            string name = "ExtremeExperiment";
             var timer = new Stopwatch();
             timer.Start();
             ExperimentGlobal.Instance.Init(name);
-            for (int i = 0; i < 50; i++)
-            {
                 var simulation = new CallsNetworkSimulation(ExperimentGlobal.Instance.Parameters.Simulation.SimulationLength,
                         ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber);
-                var saveName = "test" + i.ToString();
+                var saveName = "test";
                 simulation.Run(saveName, true);
-            }
             timer.Stop();
             Console.WriteLine("Total: {0}", timer.ElapsedMilliseconds);
+            Console.WriteLine("Informed: {0}", simulation.network.Agents.Count(a => a.Aware));
             Console.ReadLine();
 
 

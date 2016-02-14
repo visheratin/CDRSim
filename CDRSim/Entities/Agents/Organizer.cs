@@ -12,15 +12,19 @@ namespace CDRSim.Entities.Agents
         {
             Id = id;
             Type = AgentType.Organizer;
-            Contacts = new Dictionary<Agent, double>();
         }
 
-        public override void Initialize(BlockingCollection<Agent> agents)
+        public override void Initialize(IEnumerable<Agent> agents)
         {
             var random = new Random((int)DateTime.Now.ToBinary() + Id);
             InterestDegree = 0.7 + 0.3 * random.NextDouble();
-            var strongProbabilyFraction = 0.65;
-            var strongConnectionsIntervalPercent = 0.9;
+            base.CreateInitContacts(agents, AgentType.Organizer);
+        }
+
+        public override void Create(IEnumerable<Agent> agents, AgentType type, double strongProbabilyFraction, double strongConnectionsIntervalPercent)
+        {
+            strongProbabilyFraction = 0.65;
+            strongConnectionsIntervalPercent = 0.9;
             base.Create(agents, AgentType.Organizer, strongProbabilyFraction, strongConnectionsIntervalPercent);
         }
 

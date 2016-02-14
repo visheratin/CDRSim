@@ -3,6 +3,7 @@ using CDRSim.Experiments;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -37,6 +38,14 @@ namespace CDRSim.Entities
                     }
                 }
             }
+            //foreach (var agent in Agents)
+            //{
+            //    agent.Initialize(Agents);
+            //}
+            //foreach (var agent in Agents)
+            //{
+            //    agent.Create(Agents, agent.Type, 0, 0);
+            //}
             var tasks = new Task[Environment.ProcessorCount];
             var taskAgents = new List<int>[Environment.ProcessorCount];
             for (int i = 0; i < taskAgents.Length; i++)
@@ -44,7 +53,7 @@ namespace CDRSim.Entities
                 taskAgents[i] = new List<int>();
             }
             var counter = 0;
-            while(counter < Agents.Count)
+            while (counter < Agents.Count)
             {
                 taskAgents[counter % Environment.ProcessorCount].Add(counter);
                 counter++;
@@ -61,14 +70,16 @@ namespace CDRSim.Entities
                 {
                     foreach (var agent in agentsList)
                     {
-                        parallelAgents.ElementAt(agent).Initialize(parallelAgents);
+                        parallelAgents.ElementAt(agent).Initialize(Agents);
+                    }
+                    foreach (var agent in agentsList)
+                    {
+                        parallelAgents.ElementAt(agent).Create(Agents, parallelAgents.ElementAt(agent).Type, 0, 0);
                     }
                 });
             }
             Task.WaitAll(tasks);
             Agents = parallelAgents.ToList();
-            var maxContacts = Agents.Max(a => a.Contacts.Count);
-            var t = maxContacts;
         }
     }
 }
