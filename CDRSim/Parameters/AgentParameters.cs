@@ -13,6 +13,7 @@ namespace CDRSim.Parameters
         public double ActivityMean;
         public double ActivityStd;
         public double ContactsMean;
+        public double ContactsStd;
         public double StrongConnectionsMean;
         public double CallLengthMean;
     }

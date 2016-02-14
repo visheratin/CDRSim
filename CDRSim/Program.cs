@@ -24,7 +24,7 @@ namespace CDRSim
                 Directory.CreateDirectory(savePath);
             var random = new Random();
 
-            string name = "ExtremeExperiment";
+            string name = "RealExperiment";
             var timer = new Stopwatch();
             timer.Start();
             ExperimentGlobal.Instance.Init(name);

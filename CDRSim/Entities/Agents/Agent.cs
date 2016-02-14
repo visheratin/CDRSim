@@ -28,6 +28,7 @@ namespace CDRSim.Entities.Agents
         public Call CurrentCall { get; set; }
         private int _fillIndex { get; set; }
         private List<Agent> CalledContacts { get; set; }
+        public AgentConfigurator Config { get; set; }
 
         public abstract void Initialize(IEnumerable<Agent> agents);
 
@@ -36,17 +37,17 @@ namespace CDRSim.Entities.Agents
             _fillIndex = 0;
             var agentIndex = Id;
 
-            var agconfig = new AgentConfigurator(AgentType.Organizer);
+            Config = new AgentConfigurator(type);
             var strongConnectionsNumber = 0;
             var contactsNumber = 0;
-            agconfig.SetContactsConfig(ref strongConnectionsNumber, ref contactsNumber);
+            Config.SetContactsConfig(ref strongConnectionsNumber, ref contactsNumber);
             StrongContactsCount = strongConnectionsNumber;
             ContactsCount = contactsNumber;
             Contacts = new Agent[contactsNumber];
             ContactProbabilities = new double[contactsNumber];
             CalledContacts = new List<Agent>();
 
-            for (int i = agentIndex - 2; i < agentIndex + 3; i++)
+            for (int i = agentIndex - 1; i < agentIndex + 2; i++)
             {
                 if (_fillIndex == ContactsCount)
                     break;
@@ -130,8 +131,8 @@ namespace CDRSim.Entities.Agents
                 {
                     probability = (1 - probabilitySum) / (Contacts.Length - i);
                 }
-                ContactProbabilities[i] = probability;
                 probabilitySum += probability;
+                ContactProbabilities[i] = probabilitySum;
             }
         }
 
@@ -146,26 +147,28 @@ namespace CDRSim.Entities.Agents
         public virtual void Create(IEnumerable<Agent> agents, AgentType type,
             double strongProbabilyFraction, double strongConnectionsIntervalPercent)
         {
-            var agconfig = new AgentConfigurator(type);
-            ActivityInterval = agconfig.SetActivityInterval();
+            ActivityInterval = Config.SetActivityInterval();
             _activateTime = ActivityInterval;
 
             CreateRestContacts(agents, type);
             SetProbabilities(strongProbabilyFraction, strongConnectionsIntervalPercent);
-            var random = new Random();
-            switch (type)
+            if (ExperimentGlobal.Instance.Parameters.Simulation.IsCritical)
             {
-                case AgentType.Regular:
-                    InterestDegree = 0.6 + 0.4 * random.NextDouble();
-                    break;
-                case AgentType.Talker:
-                    InterestDegree = 0.8 + 0.2 * random.NextDouble();
-                    break;
-                case AgentType.Organizer:
-                    InterestDegree = 1;
-                    break;
-                default:
-                    break;
+                var random = new Random();
+                switch (type)
+                {
+                    case AgentType.Regular:
+                        InterestDegree = 0.6 + 0.4 * random.NextDouble();
+                        break;
+                    case AgentType.Talker:
+                        InterestDegree = 0.8 + 0.2 * random.NextDouble();
+                        break;
+                    case AgentType.Organizer:
+                        InterestDegree = 1;
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         public abstract void UpdateActivityInterval();
@@ -282,7 +285,7 @@ namespace CDRSim.Entities.Agents
         public virtual double GetInfoTransferProbability(int currentTime, double agentsConnection)
         {
             var relativeAgentImportance = agentsConnection / ContactProbabilities.Max();
-            var result = Information.GetRevenance(currentTime) + Information.Importance + InterestDegree + relativeAgentImportance;
+            var result = Information.GetRelevance(currentTime) + Information.Importance + InterestDegree + relativeAgentImportance;
             result /= 4;
             //Console.WriteLine(result);
             return result;

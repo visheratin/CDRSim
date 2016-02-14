@@ -142,10 +142,10 @@ namespace CDRSim.Simulation
                 var tasks = new Task[Environment.ProcessorCount];
 
                 //fw.WriteContacts(network);
-
+                var simLenSync = new int[Environment.ProcessorCount];
                 for (int i = 0; i < simulationLength; i++)
                 {
-                    int[] callInfoTotal = new int[4];
+                    //int[] callInfoTotal = new int[4];
                     for (int j = 0; j < Environment.ProcessorCount; j++)
                     {
                         var agentsList = taskAgents[j];

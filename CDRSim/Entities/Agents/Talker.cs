@@ -23,23 +23,21 @@ namespace CDRSim.Entities.Agents
 
         public override void Create(IEnumerable<Agent> agents, AgentType type, double strongProbabilyFraction, double strongConnectionsIntervalPercent)
         {
-            strongProbabilyFraction = 8;
+            strongProbabilyFraction = 0.4;
             strongConnectionsIntervalPercent = 0.7;
             base.Create(agents, AgentType.Talker, strongProbabilyFraction, strongConnectionsIntervalPercent);
         }
 
         public override Call InitiateCall(int currentTime)
         {
-            var agconfig = new AgentConfigurator(AgentType.Talker);
-            int callLength = agconfig.GetCallLength();
+            int callLength = Config.GetCallLength();
             var call = base.MakeCall(currentTime, callLength);
             return call;
         }
 
         public override void UpdateActivityInterval()
         {
-            var agconfig = new AgentConfigurator(AgentType.Talker);
-            ActivityInterval = agconfig.SetActivityInterval();
+            ActivityInterval = Config.SetActivityInterval();
         }
     }
 

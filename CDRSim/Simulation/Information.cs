@@ -24,7 +24,7 @@ namespace CDRSim.Simulation
             Spreaders = ExperimentGlobal.Instance.Parameters.Information.Spreaders;
         }
 
-        public static double GetRevenance(int time)
+        public static double GetRelevance(int time)
         {
             time -= ExperimentGlobal.Instance.Parameters.Simulation.SimulationLength / 2;
             var result = 1 / (1 + Math.Exp(time / 0.058 * ExperimentGlobal.Instance.Parameters.Simulation.SimulationLength));
