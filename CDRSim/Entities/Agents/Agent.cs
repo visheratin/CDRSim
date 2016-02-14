@@ -29,6 +29,7 @@ namespace CDRSim.Entities.Agents
         private int _fillIndex { get; set; }
         private List<Agent> CalledContacts { get; set; }
         public AgentConfigurator Config { get; set; }
+        private Random random;
 
         public abstract void Initialize(IEnumerable<Agent> agents);
 
@@ -41,27 +42,44 @@ namespace CDRSim.Entities.Agents
             var strongConnectionsNumber = 0;
             var contactsNumber = 0;
             Config.SetContactsConfig(ref strongConnectionsNumber, ref contactsNumber);
+            if (contactsNumber > ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber - 1)
+                contactsNumber = ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber - 1;
+            if (strongConnectionsNumber > contactsNumber)
+                strongConnectionsNumber = contactsNumber;
             StrongContactsCount = strongConnectionsNumber;
             ContactsCount = contactsNumber;
             Contacts = new Agent[contactsNumber];
             ContactProbabilities = new double[contactsNumber];
             CalledContacts = new List<Agent>();
 
-            for (int i = agentIndex - 1; i < agentIndex + 2; i++)
+            random = new Random(Id * Id + ContactsCount * StrongContactsCount);
+            var k = (int)ExperimentGlobal.Instance.Parameters.Agents.First(a => a.Type == type).ContactsMean;
+            
+            k /= 2;
+            var rewireProbability = 0.7;
+            for (int i = agentIndex - k; i <= agentIndex + k; i++)
             {
                 if (_fillIndex == ContactsCount)
                     break;
                 if (i == agentIndex || i < 0 || i > agents.Count() - 1)
                     continue;
-                var currentAgent = agents.ElementAt(i);
+                var res = random.NextDouble();
+                Agent currentAgent;
+                if (res < rewireProbability)
+                    currentAgent = agents.ElementAt(i);
+                else
+                {
+                    var newIndex = random.Next(agents.Count() - 1);
+                    currentAgent = agents.ElementAt(newIndex);
+                }
                 
                 Contacts[_fillIndex] = currentAgent;
-                var random = new Random();
                 if(random.NextDouble() > ExperimentGlobal.Instance.ContactProbability && 
                     currentAgent._fillIndex < (currentAgent.ContactsCount - 1) && currentAgent.Contacts != null &&
                     !currentAgent.Contacts.Contains(this))
                 {
                     currentAgent.Contacts[currentAgent._fillIndex] = this;
+                    currentAgent._fillIndex++;
                 }
                 _fillIndex++;
             }
@@ -69,14 +87,12 @@ namespace CDRSim.Entities.Agents
 
         public void CreateRestContacts(IEnumerable<Agent> agents, AgentType type)
         {
-            var random = new Random(DateTime.Now.Millisecond + Id * Id);
-            var rewireProbability = 0.5;
+            var rewireProbability = 0.3;
             while (_fillIndex < ContactsCount)
             {
                 var added = false;
                 var res = random.NextDouble();
                 {
-                    res = random.NextDouble();
                     if (res > rewireProbability)
                     {
                         var newContact = GetNewContact();
@@ -88,13 +104,15 @@ namespace CDRSim.Entities.Agents
                                 !newContact.Contacts.Contains(this))
                             {
                                 newContact.Contacts[newContact._fillIndex] = this;
+                                newContact._fillIndex++;
                             }
                             added = true;
                         }
                     }
                     else
                     {
-                        var newContact = agents.ElementAt(random.Next(agents.Count() - 1));
+                        var newIndex = random.Next(agents.Count() - 1);
+                        var newContact = agents.ElementAt(newIndex);
                         if (!Contacts.Contains(newContact))
                         {
                             Contacts[_fillIndex] = newContact;
@@ -103,6 +121,7 @@ namespace CDRSim.Entities.Agents
                                 !newContact.Contacts.Contains(this))
                             {
                                 newContact.Contacts[newContact._fillIndex] = this;
+                                newContact._fillIndex++;
                             }
                             added = true;
                         }
@@ -113,19 +132,36 @@ namespace CDRSim.Entities.Agents
             }
         }
 
+        private void ShuffleContacts()
+        {
+            for (int i = 0; i < Contacts.Length; i++)
+            {
+                var swapIndex = random.Next(Contacts.Length-1);
+                var t = Contacts[i];
+                Contacts[i] = Contacts[swapIndex];
+                Contacts[swapIndex] = t;
+            }
+        }
+
         public void SetProbabilities(double strongProbabilyFraction, double strongConnectionsIntervalPercent)
         {
+            //ShuffleContacts();
+            if (StrongContactsCount == ContactsCount)
+                strongProbabilyFraction = 1;
             var strongConnectionsInterval = strongProbabilyFraction / StrongContactsCount;
-            var strongConnectionsIntervalMin = strongConnectionsIntervalPercent * strongConnectionsInterval;
-            var strongConnectionsIntervalDiff = strongConnectionsInterval - strongConnectionsIntervalMin;
-            var random = new Random();
+            var strongConnectionsIntervalMin = 0.85 * strongConnectionsInterval;
+            var strongConnectionsIntervalDiff = strongConnectionsInterval * 1.15 - strongConnectionsIntervalMin;
             double probabilitySum = 0;
             for (int i = 0; i < Contacts.Length; i++)
             {
                 var probability = 0.0;
-                if (i < StrongContactsCount)
+                if (i < StrongContactsCount-1)
                 {
                     probability = strongConnectionsIntervalMin + random.NextDouble() * strongConnectionsIntervalDiff;
+                }
+                else if (i == StrongContactsCount - 1)
+                {
+                    probability = strongProbabilyFraction - probabilitySum;
                 }
                 else
                 {
@@ -138,7 +174,6 @@ namespace CDRSim.Entities.Agents
 
         private Agent GetNewContact()
         {
-            var random = new Random();
             var contactIndex = random.Next(_fillIndex - 1);
             var itemIndex = random.Next(Contacts[contactIndex].Contacts.Length - 1);
             return Contacts[contactIndex].Contacts[itemIndex];
@@ -154,7 +189,6 @@ namespace CDRSim.Entities.Agents
             SetProbabilities(strongProbabilyFraction, strongConnectionsIntervalPercent);
             if (ExperimentGlobal.Instance.Parameters.Simulation.IsCritical)
             {
-                var random = new Random();
                 switch (type)
                 {
                     case AgentType.Regular:
@@ -181,7 +215,6 @@ namespace CDRSim.Entities.Agents
                 {
                     if (!CalledContacts.Contains(Contacts[i]) && !Contacts[i].Busy)
                     {
-                        var random = new Random((int)DateTime.Now.ToBinary() + Id);
                         var calltransfer = false;
                         if (Information.Mode == SimulationMode.Information)
                         {
@@ -215,7 +248,6 @@ namespace CDRSim.Entities.Agents
             }
             else
             {
-                var random = new Random((int)DateTime.Now.ToBinary() + Id);
                 Agent agentToCall = null;
                 double agentToCallTie = 0;
                 var randomValue = random.NextDouble();
@@ -244,7 +276,7 @@ namespace CDRSim.Entities.Agents
                             randomValue = random.NextDouble();
                             if (randomValue < transferProbability)
                             {
-                                agentToCall.Aware = true;
+                                //agentToCall.Aware = true;
                                 calltransfer = true;
                                 length += Information.GetInfoTransferTime();
                             }
@@ -272,6 +304,8 @@ namespace CDRSim.Entities.Agents
             {
                 CurrentCall.From.Busy = false;
                 CurrentCall.To.Busy = false;
+                if (CurrentCall.Transfer == 1)
+                    CurrentCall.To.Aware = true;
                 CurrentCall = null;
             }
             if (!Busy && currentTime >= _activateTime)
@@ -287,7 +321,6 @@ namespace CDRSim.Entities.Agents
             var relativeAgentImportance = agentsConnection / ContactProbabilities.Max();
             var result = Information.GetRelevance(currentTime) + Information.Importance + InterestDegree + relativeAgentImportance;
             result /= 4;
-            //Console.WriteLine(result);
             return result;
         }
     }

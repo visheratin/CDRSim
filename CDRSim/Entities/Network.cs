@@ -46,6 +46,8 @@ namespace CDRSim.Entities
             {
                 agent.Create(Agents, agent.Type, 0, 0);
             }
+            var maxContance = Agents.Max(a => a.Contacts.Count());
+            var t = maxContance;
             //var tasks = new Task[Environment.ProcessorCount];
             //var taskAgents = new List<int>[Environment.ProcessorCount];
             //for (int i = 0; i < taskAgents.Length; i++)

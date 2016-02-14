@@ -33,7 +33,7 @@ namespace CDRSim.Experiments
         {
             Parameters = new ExperimentParameters(name);
             Name = name;
-            ContactProbability = 0.3;
+            ContactProbability = 0.5;
         }
 
     }

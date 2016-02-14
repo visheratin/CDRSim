@@ -27,14 +27,16 @@ namespace CDRSim
             string name = "RealExperiment";
             var timer = new Stopwatch();
             timer.Start();
-            ExperimentGlobal.Instance.Init(name);
+            for (int i = 0; i < 50; i++)
+            {
+                ExperimentGlobal.Instance.Init(name);
                 var simulation = new CallsNetworkSimulation(ExperimentGlobal.Instance.Parameters.Simulation.SimulationLength,
                         ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber);
-                var saveName = "test";
+                var saveName = "test" + i.ToString();
                 simulation.Run(saveName, true);
-            timer.Stop();
+                timer.Stop();
+            }
             Console.WriteLine("Total: {0}", timer.ElapsedMilliseconds);
-            Console.WriteLine("Informed: {0}", simulation.network.Agents.Count(a => a.Aware));
             Console.ReadLine();
 
 

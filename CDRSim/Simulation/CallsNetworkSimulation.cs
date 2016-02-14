@@ -141,7 +141,7 @@ namespace CDRSim.Simulation
                 }
                 var tasks = new Task[Environment.ProcessorCount];
 
-                //fw.WriteContacts(network);
+                fw.WriteContacts(network);
                 var simLenSync = new int[Environment.ProcessorCount];
                 for (int i = 0; i < simulationLength; i++)
                 {
