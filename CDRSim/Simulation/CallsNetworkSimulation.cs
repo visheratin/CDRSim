@@ -54,7 +54,6 @@ namespace CDRSim.Simulation
 
         public void Run(string name, bool inParallel = false)
         {
-            Console.WriteLine("Started simulation");
             var fw = new FileWriter(name);
             //fw.WriteContacts(network);
             //var dumpData = new List<int>();

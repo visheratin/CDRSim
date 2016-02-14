@@ -57,7 +57,7 @@ namespace CDRSim.Entities.Agents
                 Contacts[_fillIndex] = currentAgent;
                 var random = new Random();
                 if(random.NextDouble() > ExperimentGlobal.Instance.ContactProbability && 
-                    currentAgent._fillIndex < currentAgent.ContactsCount &&
+                    currentAgent._fillIndex < (currentAgent.ContactsCount - 1) && currentAgent.Contacts != null &&
                     !currentAgent.Contacts.Contains(this))
                 {
                     currentAgent.Contacts[currentAgent._fillIndex] = this;
@@ -68,7 +68,7 @@ namespace CDRSim.Entities.Agents
 
         public void CreateRestContacts(IEnumerable<Agent> agents, AgentType type)
         {
-            var random = new Random();
+            var random = new Random(DateTime.Now.Millisecond + Id * Id);
             var rewireProbability = 0.5;
             while (_fillIndex < ContactsCount)
             {
@@ -83,7 +83,7 @@ namespace CDRSim.Entities.Agents
                         {
                             Contacts[_fillIndex] = newContact;
                             if (random.NextDouble() > ExperimentGlobal.Instance.ContactProbability &&
-                                newContact._fillIndex < newContact.ContactsCount &&
+                                newContact._fillIndex < (newContact.ContactsCount - 1) &&
                                 !newContact.Contacts.Contains(this))
                             {
                                 newContact.Contacts[newContact._fillIndex] = this;
@@ -98,7 +98,7 @@ namespace CDRSim.Entities.Agents
                         {
                             Contacts[_fillIndex] = newContact;
                             if (random.NextDouble() > ExperimentGlobal.Instance.ContactProbability &&
-                                newContact._fillIndex < newContact.ContactsCount &&
+                                newContact._fillIndex < (newContact.ContactsCount - 1) &&
                                 !newContact.Contacts.Contains(this))
                             {
                                 newContact.Contacts[newContact._fillIndex] = this;

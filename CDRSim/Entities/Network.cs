@@ -38,48 +38,48 @@ namespace CDRSim.Entities
                     }
                 }
             }
-            //foreach (var agent in Agents)
-            //{
-            //    agent.Initialize(Agents);
-            //}
-            //foreach (var agent in Agents)
-            //{
-            //    agent.Create(Agents, agent.Type, 0, 0);
-            //}
-            var tasks = new Task[Environment.ProcessorCount];
-            var taskAgents = new List<int>[Environment.ProcessorCount];
-            for (int i = 0; i < taskAgents.Length; i++)
-            {
-                taskAgents[i] = new List<int>();
-            }
-            var counter = 0;
-            while (counter < Agents.Count)
-            {
-                taskAgents[counter % Environment.ProcessorCount].Add(counter);
-                counter++;
-            }
-            var parallelAgents = new BlockingCollection<Agent>();
             foreach (var agent in Agents)
             {
-                parallelAgents.Add(agent);
+                agent.Initialize(Agents);
             }
-            for (int i = 0; i < Environment.ProcessorCount; i++)
+            foreach (var agent in Agents)
             {
-                var agentsList = taskAgents[i];
-                tasks[i] = Task.Factory.StartNew(() =>
-                {
-                    foreach (var agent in agentsList)
-                    {
-                        parallelAgents.ElementAt(agent).Initialize(Agents);
-                    }
-                    foreach (var agent in agentsList)
-                    {
-                        parallelAgents.ElementAt(agent).Create(Agents, parallelAgents.ElementAt(agent).Type, 0, 0);
-                    }
-                });
+                agent.Create(Agents, agent.Type, 0, 0);
             }
-            Task.WaitAll(tasks);
-            Agents = parallelAgents.ToList();
+            //var tasks = new Task[Environment.ProcessorCount];
+            //var taskAgents = new List<int>[Environment.ProcessorCount];
+            //for (int i = 0; i < taskAgents.Length; i++)
+            //{
+            //    taskAgents[i] = new List<int>();
+            //}
+            //var counter = 0;
+            //while (counter < Agents.Count)
+            //{
+            //    taskAgents[counter % Environment.ProcessorCount].Add(counter);
+            //    counter++;
+            //}
+            //var parallelAgents = new BlockingCollection<Agent>();
+            //foreach (var agent in Agents)
+            //{
+            //    parallelAgents.Add(agent);
+            //}
+            //for (int i = 0; i < Environment.ProcessorCount; i++)
+            //{
+            //    var agentsList = taskAgents[i];
+            //    tasks[i] = Task.Factory.StartNew(() =>
+            //    {
+            //        foreach (var agent in agentsList)
+            //        {
+            //            parallelAgents.ElementAt(agent).Initialize(Agents);
+            //        }
+            //        foreach (var agent in agentsList)
+            //        {
+            //            parallelAgents.ElementAt(agent).Create(Agents, parallelAgents.ElementAt(agent).Type, 0, 0);
+            //        }
+            //    });
+            //}
+            //Task.WaitAll(tasks);
+            //Agents = parallelAgents.ToList();
         }
     }
 }
