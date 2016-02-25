@@ -24,20 +24,65 @@ namespace CDRSim
                 Directory.CreateDirectory(savePath);
             var random = new Random();
 
-            string name = "RealExperiment";
-            var timer = new Stopwatch();
-            timer.Start();
-            for (int i = 0; i < 50; i++)
-            {
-                ExperimentGlobal.Instance.Init(name);
-                var simulation = new CallsNetworkSimulation(ExperimentGlobal.Instance.Parameters.Simulation.SimulationLength,
+            string name = "VisExperiment";
+            ExperimentGlobal.Instance.Init(name);
+            var simulation = new CallsNetworkSimulation(ExperimentGlobal.Instance.Parameters.Simulation.SimulationLength,
                         ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber);
-                var saveName = "test" + i.ToString();
-                simulation.Run(saveName, true);
-                timer.Stop();
-            }
-            Console.WriteLine("Total: {0}", timer.ElapsedMilliseconds);
-            Console.ReadLine();
+            var saveName = "test";
+            simulation.Run(saveName, false);
+
+            //string name = "ExtremeExperiment";
+            //ExperimentGlobal.Instance.Init(name);
+            //var experimentName = "Importance";
+            //var param = new double[] { 0.2, 0.4, 0.6, 0.8, 1.0 };
+            ////var param = new int[] { 20, 40, 60, 80 };
+            //var experimentFolder = savePath + experimentName + @"\";
+            //if (!Directory.Exists(experimentFolder))
+            //{
+            //    Directory.CreateDirectory(experimentFolder);
+            //}
+            ////var param = new int[] { 500, 1000, 5000, 10000 };
+            //foreach (var value in param)
+            //{
+            //    ExperimentGlobal.Instance.Parameters.Information.Importance = value;
+            //    //ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber = value;
+            //    var folder = experimentFolder + value.ToString() + @"\";
+            //    if (!Directory.Exists(folder))
+            //    {
+            //        Directory.CreateDirectory(folder);
+            //    }
+            //    var experimentsCount = 50;
+            //    var tasks = new Task[experimentsCount];
+            //    for (int i = 0; i < experimentsCount; i++)
+            //    {
+            //        var index = i;
+            //        tasks[i] = (new TaskFactory()).StartNew(() =>
+            //        {
+            //            var simulation = new CallsNetworkSimulation(ExperimentGlobal.Instance.Parameters.Simulation.SimulationLength,
+            //            ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber);
+            //            var saveName = string.Format(folder + "{0}", index);
+            //            simulation.Run(saveName);
+            //        });
+            //    }
+            //    Task.WaitAll(tasks);
+            //}
+
+            //string name = "ExtremeExperiment";
+            ////var timer = new Stopwatch();
+            ////timer.Start();
+            //for (int i = 0; i < 50; i++)
+            //{
+            //    ExperimentGlobal.Instance.Init(name);
+            //    ExperimentGlobal.Instance.Parameters.Simulation.SimulationLength = 1800;
+            //    ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber = 5000;
+            //    ExperimentGlobal.Instance.Parameters.Information.Complexity = 20;
+            //    var simulation = new CallsNetworkSimulation(ExperimentGlobal.Instance.Parameters.Simulation.SimulationLength,
+            //            ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber);
+            //    simulation.Run(i.ToString(), false);
+            //}
+            //timer.Stop();
+            //Console.WriteLine("Total: {0}", timer.ElapsedMilliseconds);
+            //Console.ReadLine();
 
 
             //string name = "RealExperiment";

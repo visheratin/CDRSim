@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using CDRSim.Helpers;
 using CDRSim.Parameters;
 using CDRSim.Experiments;
+using MathNet.Numerics.Distributions;
 
 namespace CDRSim.Entities.Agents
 {
@@ -17,6 +18,7 @@ namespace CDRSim.Entities.Agents
         public AgentType Type { get; set; }
         public Agent[] Contacts { get; set; }
         public double[] ContactProbabilities { get; set; }
+        public double[] RealContactProbabilities { get; set; }
         public int ContactsCount { get; set; }
         public int StrongContactsCount { get; set; }
         public int ActivityInterval { get; set; }
@@ -50,11 +52,12 @@ namespace CDRSim.Entities.Agents
             ContactsCount = contactsNumber;
             Contacts = new Agent[contactsNumber];
             ContactProbabilities = new double[contactsNumber];
+            RealContactProbabilities = new double[contactsNumber];
             CalledContacts = new List<Agent>();
 
             random = new Random(Id * Id + ContactsCount * StrongContactsCount);
             var k = (int)ExperimentGlobal.Instance.Parameters.Agents.First(a => a.Type == type).ContactsMean;
-            
+
             k /= 2;
             var rewireProbability = 0.7;
             for (int i = agentIndex - k; i <= agentIndex + k; i++)
@@ -71,10 +74,15 @@ namespace CDRSim.Entities.Agents
                 {
                     var newIndex = random.Next(agents.Count() - 1);
                     currentAgent = agents.ElementAt(newIndex);
+                    while(currentAgent == this)
+                    {
+                        newIndex = random.Next(agents.Count() - 1);
+                        currentAgent = agents.ElementAt(newIndex);
+                    }
                 }
-                
+
                 Contacts[_fillIndex] = currentAgent;
-                if(random.NextDouble() > ExperimentGlobal.Instance.ContactProbability && 
+                if (random.NextDouble() > ExperimentGlobal.Instance.ContactProbability &&
                     currentAgent._fillIndex < (currentAgent.ContactsCount - 1) && currentAgent.Contacts != null &&
                     !currentAgent.Contacts.Contains(this))
                 {
@@ -96,7 +104,7 @@ namespace CDRSim.Entities.Agents
                     if (res > rewireProbability)
                     {
                         var newContact = GetNewContact();
-                        if (!Contacts.Contains(newContact))
+                        if (newContact != this && !Contacts.Contains(newContact))
                         {
                             Contacts[_fillIndex] = newContact;
                             if (random.NextDouble() > ExperimentGlobal.Instance.ContactProbability &&
@@ -113,7 +121,7 @@ namespace CDRSim.Entities.Agents
                     {
                         var newIndex = random.Next(agents.Count() - 1);
                         var newContact = agents.ElementAt(newIndex);
-                        if (!Contacts.Contains(newContact))
+                        if (newContact != this && !Contacts.Contains(newContact))
                         {
                             Contacts[_fillIndex] = newContact;
                             if (random.NextDouble() > ExperimentGlobal.Instance.ContactProbability &&
@@ -127,7 +135,7 @@ namespace CDRSim.Entities.Agents
                         }
                     }
                 }
-                if(added)
+                if (added)
                     _fillIndex++;
             }
         }
@@ -136,7 +144,7 @@ namespace CDRSim.Entities.Agents
         {
             for (int i = 0; i < Contacts.Length; i++)
             {
-                var swapIndex = random.Next(Contacts.Length-1);
+                var swapIndex = random.Next(Contacts.Length - 1);
                 var t = Contacts[i];
                 Contacts[i] = Contacts[swapIndex];
                 Contacts[swapIndex] = t;
@@ -155,20 +163,25 @@ namespace CDRSim.Entities.Agents
             for (int i = 0; i < Contacts.Length; i++)
             {
                 var probability = 0.0;
-                if (i < StrongContactsCount-1)
+                if (i < StrongContactsCount - 1)
                 {
                     probability = strongConnectionsIntervalMin + random.NextDouble() * strongConnectionsIntervalDiff;
                 }
                 else if (i == StrongContactsCount - 1)
                 {
-                    probability = strongProbabilyFraction - probabilitySum;
+                    probability = Math.Abs(strongProbabilyFraction - probabilitySum);
                 }
                 else
                 {
                     probability = (1 - probabilitySum) / (Contacts.Length - i);
                 }
+                if (probability < 0)
+                {
+                    Console.WriteLine(probability);
+                }
                 probabilitySum += probability;
                 ContactProbabilities[i] = probabilitySum;
+                RealContactProbabilities[i] = probability;
             }
         }
 
@@ -189,20 +202,37 @@ namespace CDRSim.Entities.Agents
             SetProbabilities(strongProbabilyFraction, strongConnectionsIntervalPercent);
             if (ExperimentGlobal.Instance.Parameters.Simulation.IsCritical)
             {
-                switch (type)
-                {
-                    case AgentType.Regular:
-                        InterestDegree = 0.6 + 0.4 * random.NextDouble();
-                        break;
-                    case AgentType.Talker:
-                        InterestDegree = 0.8 + 0.2 * random.NextDouble();
-                        break;
-                    case AgentType.Organizer:
-                        InterestDegree = 1;
-                        break;
-                    default:
-                        break;
-                }
+                InterestDegree = ExperimentGlobal.Instance.Parameters.Information.InterestDegree +
+                    (1 - ExperimentGlobal.Instance.Parameters.Information.InterestDegree) * random.NextDouble();
+                //var distribution = new Normal(1, 1);
+                //var number = -1.0;
+                //number = distribution.Sample();
+                //if (number < 0)
+                //    number = 0;
+                //if (number > 1)
+                //    number = 1;
+                //while (number < 0 || number > 1)
+                //{
+                //    number = distribution.Sample();
+                //    if (number < 0)
+                //        number = 0;
+                //}
+                //Console.WriteLine(number);
+                //InterestDegree = number;
+                //switch (type)
+                //{
+                //    case AgentType.Regular:
+                //        InterestDegree = 0.6 + 0.4 * random.NextDouble();
+                //        break;
+                //    case AgentType.Talker:
+                //        InterestDegree = 0.8 + 0.2 * random.NextDouble();
+                //        break;
+                //    case AgentType.Organizer:
+                //        InterestDegree = 1;
+                //        break;
+                //    default:
+                //        break;
+                //}
             }
         }
         public abstract void UpdateActivityInterval();
@@ -216,18 +246,15 @@ namespace CDRSim.Entities.Agents
                     if (!CalledContacts.Contains(Contacts[i]) && !Contacts[i].Busy)
                     {
                         var calltransfer = false;
-                        if (Information.Mode == SimulationMode.Information)
+                        if (ExperimentGlobal.Instance.Parameters.Simulation.SimulationMode == SimulationMode.Information && Aware)
                         {
-                            if (Aware && !Contacts[i].Aware)
+                            var transferProbability = GetInfoTransferProbability(currentTime, i);
+                            var randomValue = random.NextDouble();
+                            if (randomValue < transferProbability)
                             {
-                                var transferProbability = GetInfoTransferProbability(currentTime, ContactProbabilities[i]);
-                                var randomValue = random.NextDouble();
-                                if (randomValue < transferProbability)
-                                {
-                                    Contacts[i].Aware = true;
-                                    calltransfer = true;
-                                    length += Information.GetInfoTransferTime();
-                                }
+                                //Contacts[i].Aware = true;
+                                calltransfer = true;
+                                length += Information.GetInfoTransferTime();
                             }
                         }
                         var call = new Call(this, Contacts[i], currentTime, length);
@@ -249,7 +276,6 @@ namespace CDRSim.Entities.Agents
             else
             {
                 Agent agentToCall = null;
-                double agentToCallTie = 0;
                 var randomValue = random.NextDouble();
                 var index = -1;
                 for (int i = 0; i < ContactProbabilities.Length; i++)
@@ -264,15 +290,14 @@ namespace CDRSim.Entities.Agents
                 {
                     var contact = Contacts[index];
                     agentToCall = contact;
-                    agentToCallTie = ContactProbabilities[index];
                     var calltransfer = false;
                     if (this is Talker && agentToCall is Talker)
                         length *= 3;
-                    if (Information.Mode == SimulationMode.Information)
+                    if (ExperimentGlobal.Instance.Parameters.Simulation.SimulationMode == SimulationMode.Information)
                     {
-                        if (Aware && !agentToCall.Aware)
+                        if (Aware)
                         {
-                            var transferProbability = GetInfoTransferProbability(currentTime, agentToCallTie);
+                            var transferProbability = GetInfoTransferProbability(currentTime, index);
                             randomValue = random.NextDouble();
                             if (randomValue < transferProbability)
                             {
@@ -297,7 +322,7 @@ namespace CDRSim.Entities.Agents
                 return null;
             }
         }
- 
+
         public virtual Call Check(int currentTime)
         {
             if (CurrentCall != null && currentTime >= _callEndTime)
@@ -316,10 +341,10 @@ namespace CDRSim.Entities.Agents
                 return null;
         }
 
-        public virtual double GetInfoTransferProbability(int currentTime, double agentsConnection)
+        public virtual double GetInfoTransferProbability(int currentTime, int index)
         {
-            var relativeAgentImportance = agentsConnection / ContactProbabilities.Max();
-            var result = Information.GetRelevance(currentTime) + Information.Importance + InterestDegree + relativeAgentImportance;
+            var relativeAgentImportance = RealContactProbabilities[index] / RealContactProbabilities.Max();
+            var result = Information.GetRelevance(currentTime) + ExperimentGlobal.Instance.Parameters.Information.Importance + InterestDegree + relativeAgentImportance;
             result /= 4;
             return result;
         }

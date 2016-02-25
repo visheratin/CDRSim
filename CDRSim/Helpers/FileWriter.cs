@@ -40,7 +40,7 @@ namespace CDRSim.Helpers
             {
                 foreach (var agent in network.Agents)
                 {
-                    if (agent.Aware == true)
+                    if (agent.Aware)
                     {
                         file.Write("1." + agent.Id + " ");
                     }
@@ -49,10 +49,11 @@ namespace CDRSim.Helpers
                         file.Write("0." + agent.Id + " ");
                     }
 
-                    foreach (var cont in agent.Contacts)
+                    for (int i = 0; i < agent.Contacts.Length; i++)
                     {
-                        file.Write(cont.Id + " ");
+                        file.Write(agent.Contacts[i].Id + "-" + agent.RealContactProbabilities[i] + " ");
                     }
+
                     file.Write("\n");
                 }
 

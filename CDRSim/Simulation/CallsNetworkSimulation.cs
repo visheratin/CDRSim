@@ -44,8 +44,9 @@ namespace CDRSim.Simulation
             }
 
             var rand = new Random();
-            var agentsToAware = agents.Take((int)(ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber *
-                ExperimentGlobal.Instance.Parameters.Information.SpreadersPart)).ToArray();
+            //var agentsToAware = agents.Take((int)(ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber *
+            //    ExperimentGlobal.Instance.Parameters.Information.SpreadersPart)).ToArray();
+            var agentsToAware = agents.Take(10).ToArray();
             foreach (var agent in agentsToAware)
             {
                 agent.Aware = true;
@@ -55,7 +56,7 @@ namespace CDRSim.Simulation
         public void Run(string name, bool inParallel = false)
         {
             var fw = new FileWriter(name);
-            //fw.WriteContacts(network);
+            fw.WriteContacts(network);
             //var dumpData = new List<int>();
             //for (int i = 0; i < simulationLength; i++)
             //{
@@ -141,7 +142,7 @@ namespace CDRSim.Simulation
                 }
                 var tasks = new Task[Environment.ProcessorCount];
 
-                fw.WriteContacts(network);
+                //fw.WriteContacts(network);
                 var simLenSync = new int[Environment.ProcessorCount];
                 for (int i = 0; i < simulationLength; i++)
                 {
