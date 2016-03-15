@@ -93,7 +93,7 @@ namespace CDRSim.Entities.Agents
 
            //result = Math.Sqrt(result);
 
-            result /= 3;
+            result /= 4;
 
             //using (StreamWriter file = new StreamWriter("prob.txt", true))
             //{
