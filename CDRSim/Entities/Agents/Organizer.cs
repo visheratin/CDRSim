@@ -6,26 +6,26 @@ using System.Collections.Concurrent;
 
 namespace CDRSim.Entities.Agents
 {
-    public class RegularAgent : Agent
+    public class Organizer : Agent
     {
-        public RegularAgent(int id)
+        public Organizer(int id)
         {
             Id = id;
-            Type = AgentType.Regular;
+            Type = AgentType.Organizer;
         }
 
         public override void Initialize(IEnumerable<Agent> agents)
         {
             var random = new Random((int)DateTime.Now.ToBinary() + Id);
-            InterestDegree = random.NextDouble();
-            base.CreateInitContacts(agents, AgentType.Regular);
+            InterestDegree = 0.7 + 0.3 * random.NextDouble();
+            base.CreateInitContacts(agents, AgentType.Organizer);
         }
 
         public override void Create(IEnumerable<Agent> agents, AgentType type, double strongProbabilyFraction, double strongConnectionsIntervalPercent)
         {
-            strongProbabilyFraction = 0.85;
-            strongConnectionsIntervalPercent = 0.8;
-            base.Create(agents, AgentType.Regular, strongProbabilyFraction, strongConnectionsIntervalPercent);
+            strongProbabilyFraction = 0.5;
+            strongConnectionsIntervalPercent = 0.9;
+            base.Create(agents, AgentType.Organizer, strongProbabilyFraction, strongConnectionsIntervalPercent);
         }
 
         public override Call InitiateCall(int currentTime)
@@ -40,4 +40,6 @@ namespace CDRSim.Entities.Agents
             ActivityInterval = Config.SetActivityInterval();
         }
     }
+
+
 }
