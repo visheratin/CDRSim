@@ -21,9 +21,12 @@ namespace CDRSim.Helpers
         public int SetActivityInterval()
         {
             var activityMean = parameters.ActivityMean;
-            var distribution = new Poisson(activityMean);
-            var interval = distribution.Sample();
-            return interval;
+            var activityStd = parameters.ActivityStd;
+            var distribution = new Normal(activityMean, activityStd);
+            var interval = -1.0;
+            while(interval < 0)
+                interval = distribution.Sample();
+            return (int)interval;
         }
 
         public int GetCallLength()
@@ -38,14 +41,15 @@ namespace CDRSim.Helpers
         public void SetContactsConfig(ref int strongConnectionsInterval, ref int contactsNumber)
         {
             var contactsMean = parameters.ContactsMean;
-            var distribution = new Poisson(contactsMean);
-            while (contactsNumber == 0)
+            var contactsStd = parameters.ContactsStd;
+            var distribution = new Normal(contactsMean, contactsStd);
+            while (contactsNumber < 5)
             {
                 contactsNumber = (int)distribution.Sample();
             }
             var strongConnectionsMean = parameters.StrongConnectionsMean;
-            distribution = new Poisson(strongConnectionsMean);
-            strongConnectionsInterval = (int)distribution.Sample();
+            var strongDistribution = new Poisson(strongConnectionsMean);
+            strongConnectionsInterval = (int)strongDistribution.Sample();
         }
 
     }

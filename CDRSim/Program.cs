@@ -10,6 +10,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
+using System.Linq;
 
 namespace CDRSim
 {
@@ -18,77 +19,171 @@ namespace CDRSim
 
         static void Main(string[] args)
         {
-            var savePath = @"CallData";
+            var savePath = @"CallData\";
             if (!Directory.Exists(savePath))
                 Directory.CreateDirectory(savePath);
-
             var random = new Random();
-            string name = "RealExperiment";
 
-            for (int percentage = 5; percentage <= 95; percentage+=5)
-            {
-                ExperimentGlobal.Instance.Init(name);
-                var timer = new Stopwatch();
-                ExperimentGlobal.Instance.Parameters.Information.Spreaders = 0;
-                ExperimentGlobal.Instance.Parameters.Information.SpreadersPart = percentage / 100.0;
-                var organizersPart = ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["Organizer"];
-                var otherAgentsRatio = Math.Round(ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["RegularAgent"] /
-                    ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["Talker"], 0);
-                var maxAgentChange = Math.Round(otherAgentsRatio / (otherAgentsRatio + 1), 2);
-                var minAgentChange = Math.Round(1 / (otherAgentsRatio + 1), 2);
-                var difference = 0.0;
-                var currentPercentage = percentage / 100.0;
-                if(currentPercentage > organizersPart)
-                {
-                    difference = currentPercentage - organizersPart;
-                    ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["Organizer"] = currentPercentage;
-                    ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["RegularAgent"] -= difference * maxAgentChange;
-                    ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["Talker"] -= difference * minAgentChange;
-                }
-                timer.Start();
-                var tasks = new Task[1];
-                for (int i = 0; i < 1; i++)
-                {
-                    var index = i;
-                    tasks[i] = (new TaskFactory()).StartNew(() =>
-                    {
-                        var simulation = new CallsNetworkSimulation(ExperimentGlobal.Instance.Parameters.Simulation.SimulationLength,
+            string name = "VisExperiment";
+            ExperimentGlobal.Instance.Init(name);
+            var simulation = new CallsNetworkSimulation(ExperimentGlobal.Instance.Parameters.Simulation.SimulationLength,
                         ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber);
-                        var saveName = string.Format("{0}_{1}", index, percentage);
-                        simulation.Run(saveName);
-                    });
-                }
-                Task.WaitAll(tasks);
-                timer.Stop();
-                Console.WriteLine(timer.ElapsedMilliseconds/1000);
-            }
+            var saveName = "test";
+            simulation.Run(saveName, false);
 
-            
-
-
-            //Files
-            //using (StreamWriter file = new StreamWriter(savePath + "\\edgeList.txt"))
+            //string name = "ExtremeExperiment";
+            //ExperimentGlobal.Instance.Init(name);
+            //var experimentName = "Importance";
+            //var param = new double[] { 0.2, 0.4, 0.6, 0.8, 1.0 };
+            ////var param = new int[] { 20, 40, 60, 80 };
+            //var experimentFolder = savePath + experimentName + @"\";
+            //if (!Directory.Exists(experimentFolder))
             //{
-            //    foreach (var call in simulation.Calls)
+            //    Directory.CreateDirectory(experimentFolder);
+            //}
+            ////var param = new int[] { 500, 1000, 5000, 10000 };
+            //foreach (var value in param)
+            //{
+            //    ExperimentGlobal.Instance.Parameters.Information.Importance = value;
+            //    //ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber = value;
+            //    var folder = experimentFolder + value.ToString() + @"\";
+            //    if (!Directory.Exists(folder))
             //    {
-            //        string type1;
-            //        string type2;
+            //        Directory.CreateDirectory(folder);
+            //    }
+            //    var experimentsCount = 50;
+            //    var tasks = new Task[experimentsCount];
+            //    for (int i = 0; i < experimentsCount; i++)
+            //    {
+            //        var index = i;
+            //        tasks[i] = (new TaskFactory()).StartNew(() =>
+            //        {
+            //            var simulation = new CallsNetworkSimulation(ExperimentGlobal.Instance.Parameters.Simulation.SimulationLength,
+            //            ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber);
+            //            var saveName = string.Format(folder + "{0}", index);
+            //            simulation.Run(saveName);
+            //        });
+            //    }
+            //    Task.WaitAll(tasks);
+            //}
 
-            //        if (call.From is RegularAgent)
-            //            type1 = "1.";
-            //        else if (call.From is Talker)
-            //            type1 = "2.";
-            //        else
-            //            type1 = "3.";
+            //string name = "ExtremeExperiment";
+            ////var timer = new Stopwatch();
+            ////timer.Start();
+            //for (int i = 0; i < 50; i++)
+            //{
+            //    ExperimentGlobal.Instance.Init(name);
+            //    ExperimentGlobal.Instance.Parameters.Simulation.SimulationLength = 1800;
+            //    ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber = 5000;
+            //    ExperimentGlobal.Instance.Parameters.Information.Complexity = 20;
+            //    var simulation = new CallsNetworkSimulation(ExperimentGlobal.Instance.Parameters.Simulation.SimulationLength,
+            //            ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber);
+            //    simulation.Run(i.ToString(), false);
+            //}
+            //timer.Stop();
+            //Console.WriteLine("Total: {0}", timer.ElapsedMilliseconds);
+            //Console.ReadLine();
 
-            //        if (call.To is RegularAgent)
-            //            type2 = "1.";
-            //        else if (call.To is Talker)
-            //            type2 = "2.";
-            //        else
-            //            type2 = "3.";
 
-            //        file.WriteLine(type1 + call.From.Id + " " + type2 + call.To.Id + " " + call.Length + " " + call.Transfer);
+            //string name = "RealExperiment";
+            //for (int spreaders = 0; spreaders <= 2; spreaders++)
+            //{
+            //    var spreadersFolder = savePath + spreaders.ToString() + "\\";
+            //    if (!Directory.Exists(spreadersFolder))
+            //    {
+            //        Directory.CreateDirectory(spreadersFolder);
+            //    }
+            //    for (int percentage = 5; percentage <= 95; percentage += 5)
+            //    {
+            //        var percentageString = String.Format("{0:00}", percentage);
+            //        var percentageFolder = spreadersFolder + percentageString + "%\\";
+            //        if (!Directory.Exists(percentageFolder))
+            //        {
+            //            Directory.CreateDirectory(percentageFolder);
+            //        }
+            //        ExperimentGlobal.Instance.Init(name);
+            //        var timer = new Stopwatch();
+            //        ExperimentGlobal.Instance.Parameters.Information.Spreaders = spreaders;
+            //        ExperimentGlobal.Instance.Parameters.Information.SpreadersPart = percentage / 100.0;
+            //        double mainPart = 0.0;
+            //        switch (spreaders)
+            //        {
+            //            case 0:
+            //                mainPart = ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["Organizer"];
+            //                break;
+            //            case 1:
+            //                mainPart = ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["Talker"];
+            //                break;
+            //            case 2:
+            //                mainPart = ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["RegularAgent"];
+            //                break;
+            //            default:
+            //                break;
+            //        }
+            //        double otherAgentsRatio = 0.0;
+            //        switch (spreaders)
+            //        {
+            //            case 0:
+            //                otherAgentsRatio = Math.Round(ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["RegularAgent"] /
+            //                    ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["Talker"], 0);
+            //                break;
+            //            case 1:
+            //                otherAgentsRatio = Math.Round(ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["RegularAgent"] /
+            //                    ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["Organizer"], 0);
+            //                break;
+            //            case 2:
+            //                otherAgentsRatio = Math.Round(ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["Talker"] /
+            //                    ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["Organizer"], 0);
+            //                break;
+            //            default:
+            //                break;
+            //        }
+            //        var maxAgentChange = Math.Round(otherAgentsRatio / (otherAgentsRatio + 1), 2);
+            //        var minAgentChange = Math.Round(1 / (otherAgentsRatio + 1), 2);
+            //        var difference = 0.0;
+            //        var currentPercentage = percentage / 100.0;
+            //        if (currentPercentage > mainPart)
+            //        {
+            //            difference = currentPercentage - mainPart;
+            //            switch (spreaders)
+            //            {
+            //                case 0:
+            //                    ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["Organizer"] = currentPercentage;
+            //                    ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["RegularAgent"] -= difference * maxAgentChange;
+            //                    ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["Talker"] -= difference * minAgentChange;
+            //                    break;
+            //                case 1:
+            //                    ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["Talker"] = currentPercentage;
+            //                    ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["RegularAgent"] -= difference * maxAgentChange;
+            //                    ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["Organizer"] -= difference * minAgentChange;
+            //                    break;
+            //                case 2:
+            //                    ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["RegularAgent"] = currentPercentage;
+            //                    ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["Talker"] -= difference * maxAgentChange;
+            //                    ExperimentGlobal.Instance.Parameters.Simulation.AgentTypes["Organizer"] -= difference * minAgentChange;
+            //                    break;
+            //                default:
+            //                    break;
+            //            }
+
+            //        }
+            //        timer.Start();
+            //        var experimentsCount = 100;
+            //        var tasks = new Task[experimentsCount];
+            //        for (int i = 0; i < experimentsCount; i++)
+            //        {
+            //            var index = i;
+            //            tasks[i] = (new TaskFactory()).StartNew(() =>
+            //            {
+            //                var simulation = new CallsNetworkSimulation(ExperimentGlobal.Instance.Parameters.Simulation.SimulationLength,
+            //                ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber);
+            //                var saveName = string.Format(percentageFolder + "{0}", index);
+            //                simulation.Run(saveName);
+            //            });
+            //        }
+            //        Task.WaitAll(tasks);
+            //        timer.Stop();
+            //        Console.WriteLine(timer.ElapsedMilliseconds / 1000);
             //    }
             //}
         }

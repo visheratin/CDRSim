@@ -15,5 +15,6 @@ namespace CDRSim.Parameters
         public SimulationMode SimulationMode;
         public int SimulationLength;
         public int AgentsNumber;
+        public bool IsCritical;
     }
 }

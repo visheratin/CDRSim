@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using MathNet.Numerics.Distributions;
-using System.Configuration;
-using System.Collections.Specialized;
 using CDRSim.Helpers;
 using CDRSim.Parameters;
+using System.Collections.Concurrent;
 
 namespace CDRSim.Entities.Agents
 {
@@ -14,86 +11,33 @@ namespace CDRSim.Entities.Agents
         public Talker(int id)
         {
             Id = id;
-            Contacts = new Dictionary<Agent, double>();
+            Type = AgentType.Talker;
         }
 
-        public override void Initialize(List<Agent> agents)
+        public override void Initialize(IEnumerable<Agent> agents)
         {
-            var agconfig = new AgentConfigurator(AgentType.Talker);
             var random = new Random((int)DateTime.Now.ToBinary() + Id);
-            var activityInterval = agconfig.SetActivityInterval();
-            ActivityInterval = random.Next(activityInterval);
-            _activateTime = ActivityInterval;
-
-            var strongConnectionsNumber = 0;
-            var contactsNumber = 0;
-
             InterestDegree = 0.3 + 0.7 * random.NextDouble();
+            base.CreateInitContacts(agents, AgentType.Talker);
+        }
 
-            agconfig.SetContactsConfig(ref strongConnectionsNumber, ref contactsNumber);
-
-            var contactsLeft = contactsNumber;
-            var strongProbabilyFractoin = 0.8;
-            var strongConnectionsInterval = strongProbabilyFractoin / strongConnectionsNumber;
-            var strongConnectionsIntervalMin = 0.7 * strongConnectionsInterval;
-            var strongConnectionsIntervalDiff = strongConnectionsInterval - strongConnectionsIntervalMin;
-
-            var usedIndices = new List<int>();
-
-            double probabilitySum = 0;
-            for (int i = 0; i < contactsNumber; i++)
-            {
-                var currentAgentIndex = random.Next(agents.Count);
-                if (usedIndices.Contains(currentAgentIndex))
-                {
-                    i--;
-                    continue;
-                }
-                usedIndices.Add(currentAgentIndex);
-                var currentAgent = agents.ElementAt(currentAgentIndex);
-                var probability = 0.0;
-
-                if (i < strongConnectionsNumber)
-                {
-                    probability = strongConnectionsIntervalMin + random.NextDouble() * strongConnectionsIntervalDiff;
-                }
-                else
-                {
-                    if (i == contactsNumber - 1)
-                    {
-                        probability = 1 - probabilitySum;
-                    }
-
-                    else
-                    {
-                        probability = (1 - probabilitySum) / contactsLeft;
-                    }
-                }
-
-                if (currentAgent is Talker && i != contactsNumber - 1)
-                {
-                    var talkerPenalty = probability  *  (random.NextDouble() % 0.0001);
-                    probability += talkerPenalty;
-                }
-
-                probabilitySum += probability;
-                Contacts.Add(currentAgent, probabilitySum); 
-                contactsLeft--;
-            }
+        public override void Create(IEnumerable<Agent> agents, AgentType type, double strongProbabilyFraction, double strongConnectionsIntervalPercent)
+        {
+            strongProbabilyFraction = 0.4;
+            strongConnectionsIntervalPercent = 0.7;
+            base.Create(agents, AgentType.Talker, strongProbabilyFraction, strongConnectionsIntervalPercent);
         }
 
         public override Call InitiateCall(int currentTime)
         {
-            var agconfig = new AgentConfigurator(AgentType.Talker);
-            int callLength = agconfig.GetCallLength();
+            int callLength = Config.GetCallLength();
             var call = base.MakeCall(currentTime, callLength);
             return call;
         }
 
         public override void UpdateActivityInterval()
         {
-            var agconfig = new AgentConfigurator(AgentType.Talker);
-            ActivityInterval = agconfig.SetActivityInterval();
+            ActivityInterval = Config.SetActivityInterval();
         }
     }
 

@@ -14,5 +14,6 @@ namespace CDRSim.Parameters
         public double Complexity;
         public double SpreadersPart;
         public double Spreaders;
+        public double InterestDegree;
     }
 }
