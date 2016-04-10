@@ -78,54 +78,55 @@ namespace CDRSim.Simulation
             //    }
             //}
 
-            var dumpData = new int[simulationLength];
+            var dumpData = new int[simulationLength][];
             //var fw = new FileWriter(name);
 
             if (!inParallel)
             {
                 for (int i = 0; i < simulationLength; i++)
                 {
-                    //int[] callInfo = new int[4];
+                    int[] callInfo = new int[5];
                     foreach (var agent in network.Agents)
                     {
                         var call = agent.Check(i);
                         if (call != null)
                         {
                             Calls.Add(call);
-                            //if (call.Transfer == 1)
-                            //{
-                            //    switch (call.From.Type)
-                            //    {
-                            //        case AgentType.Organizer:
-                            //            callInfo[1]++;
-                            //            break;
-                            //        case AgentType.Regular:
-                            //            callInfo[2]++;
-                            //            break;
-                            //        case AgentType.Talker:
-                            //            callInfo[3]++;
-                            //            break;
-                            //        default:
-                            //            break;
-                            //    }
-                            //}
+                            if (call.Transfer == 1 && !call.To.Aware)
+                            {
+                                switch (call.From.Type)
+                                {
+                                    case AgentType.Organizer:
+                                        callInfo[1]++;
+                                        break;
+                                    case AgentType.Regular:
+                                        callInfo[2]++;
+                                        break;
+                                    case AgentType.Talker:
+                                        callInfo[3]++;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
                         }
                     }
-                    //callInfo[0] = network.Agents.Count(a => a.Aware);
-                    //if(i > 0)
-                    //{
-                    //    callInfo[1] += dumpData[i - 1][1];
-                    //    callInfo[2] += dumpData[i - 1][2];
-                    //    callInfo[3] += dumpData[i - 1][3];
-                    //}
-                    //dumpData[i] = callInfo;
-                    dumpData[i] = network.Agents.Count(a => a.Aware);
-                    //fw.CallsCount.Add(Calls.Count);
+                    callInfo[0] = network.Agents.Count(a => a.Aware);
+                    if (i > 0)
+                    {
+                        callInfo[1] += dumpData[i - 1][1];
+                        callInfo[2] += dumpData[i - 1][2];
+                        callInfo[3] += dumpData[i - 1][3];
+                    }
+                    callInfo[4] = i;
+                    dumpData[i] = callInfo;
+                    //dumpData[i] = network.Agents.Count(a => a.Aware);
+                    fw.CallsCount.Add(Calls.Count);
                 }
-                fw.WriteDumpData(dumpData);
+                fw.WriteDumpDataExt(dumpData);
                 GC.Collect();
-                //fw.WriteCallsCount();
-                //fw.WriteCallsData(Calls);
+                fw.WriteCallsCount();
+                fw.WriteCallsData(Calls);
             }
             else
             {
@@ -146,7 +147,7 @@ namespace CDRSim.Simulation
                 var simLenSync = new int[Environment.ProcessorCount];
                 for (int i = 0; i < simulationLength; i++)
                 {
-                    //int[] callInfoTotal = new int[4];
+                    int[] callInfoTotal = new int[4];
                     for (int j = 0; j < Environment.ProcessorCount; j++)
                     {
                         var agentsList = taskAgents[j];
@@ -164,19 +165,31 @@ namespace CDRSim.Simulation
                     }
 
                     Task.WaitAll(tasks);
-                    //callInfoTotal[0] = network.Agents.Count(a => a.Aware);
-                    //callInfoTotal[1] = Calls.Count(c => c.Transfer == 1 && c.Start <= i && c.From.Type == AgentType.Regular);
-                    //callInfoTotal[2] = Calls.Count(c => c.Transfer == 1 && c.Start <= i && c.From.Type == AgentType.Talker);
-                    //callInfoTotal[3] = Calls.Count(c => c.Transfer == 1 && c.Start <= i && c.From.Type == AgentType.Organizer);
-                    //dumpData[i] = callInfoTotal;
-                    dumpData[i] = network.Agents.Count(a => a.Aware); ;
+                    callInfoTotal[0] = network.Agents.Count(a => a.Aware);
+                    callInfoTotal[1] = Calls.Count(c => c.Transfer == 1 && c.Start <= i && c.From.Type == AgentType.Regular);
+                    callInfoTotal[2] = Calls.Count(c => c.Transfer == 1 && c.Start <= i && c.From.Type == AgentType.Talker);
+                    callInfoTotal[3] = Calls.Count(c => c.Transfer == 1 && c.Start <= i && c.From.Type == AgentType.Organizer);
+                    dumpData[i] = callInfoTotal;
+                    //dumpData[i] = network.Agents.Count(a => a.Aware);
                     //fw.CallsCount.Add(Calls.Count);
                 }
-                fw.WriteDumpData(dumpData);
+                fw.WriteDumpDataExt(dumpData);
                 //fw.WriteCallsCount();
                 //fw.WriteCallsData(Calls);
             }
-
+            //var extDumpData = new int[simulationLength][];
+            //for (int i = 0; i < simulationLength; i++)
+            //{
+            //    extDumpData[i] = new int[3];
+            //    extDumpData[i][0] = Calls.Count(c => c.Transfer == 1 && c.Start <= i && c.From.Type == AgentType.Regular);
+            //    extDumpData[i][1] = Calls.Count(c => c.Transfer == 1 && c.Start <= i && c.From.Type == AgentType.Talker);
+            //    extDumpData[i][2] = Calls.Count(c => c.Transfer == 1 && c.Start <= i && c.From.Type == AgentType.Organizer);
+            //}
+            //fw.WriteDumpDataExt(extDumpData);
+            var dumper = new DataDumper(name);
+            dumper.DumpAgents(network.Agents);
+            dumper.DumpContacts(network.Agents);
+            dumper.DumpCalls(Calls.ToList());
         }
     }
 }

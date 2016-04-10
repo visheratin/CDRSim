@@ -253,7 +253,8 @@ namespace CDRSim.Entities.Agents
                             if (randomValue < transferProbability)
                             {
                                 //Contacts[i].Aware = true;
-                                calltransfer = true;
+                                if(!Contacts[i].Aware)
+                                    calltransfer = true;
                                 length += Information.GetInfoTransferTime();
                             }
                         }
@@ -275,54 +276,54 @@ namespace CDRSim.Entities.Agents
             }
             else
             {
-                Agent agentToCall = null;
-                var randomValue = random.NextDouble();
+            Agent agentToCall = null;
+            var randomValue = random.NextDouble();
                 var index = -1;
                 for (int i = 0; i < ContactProbabilities.Length; i++)
-                {
+            {
                     if (ContactProbabilities[i] >= randomValue)
-                    {
-                        index = i;
-                        break;
-                    }
-                }
-                if (index >= 0 && !Contacts[index].Busy)
                 {
+                        index = i;
+                    break;
+                }
+            }
+                if (index >= 0 && !Contacts[index].Busy)
+            {
                     var contact = Contacts[index];
                     agentToCall = contact;
-                    var calltransfer = false;
-                    if (this is Talker && agentToCall is Talker)
-                        length *= 3;
+                var calltransfer = false;
+                if (this is Talker && agentToCall is Talker)
+                    length *= 3;
                     if (ExperimentGlobal.Instance.Parameters.Simulation.SimulationMode == SimulationMode.Information)
-                    {
+                {
                         if (Aware)
-                        {
+                    {
                             var transferProbability = GetInfoTransferProbability(currentTime, index);
-                            randomValue = random.NextDouble();
-                            if (randomValue < transferProbability)
-                            {
+                        randomValue = random.NextDouble();
+                        if (randomValue < transferProbability)
+                        {
                                 //agentToCall.Aware = true;
-                                calltransfer = true;
-                                length += Information.GetInfoTransferTime();
-                            }
+                            calltransfer = true;
+                            length += Information.GetInfoTransferTime();
                         }
                     }
-                    var call = new Call(this, agentToCall, currentTime, length);
-                    _callEndTime = currentTime + length;
-                    agentToCall._callEndTime = currentTime + length;
-                    Busy = true;
-                    agentToCall.Busy = true;
-                    UpdateActivityInterval();
-                    _activateTime = _callEndTime + ActivityInterval;
-                    if (calltransfer)
-                        call.Transfer = 1;
-                    CurrentCall = call;
-                    return call;
                 }
-                return null;
+                var call = new Call(this, agentToCall, currentTime, length);
+                _callEndTime = currentTime + length;
+                    agentToCall._callEndTime = currentTime + length;
+                Busy = true;
+                agentToCall.Busy = true;
+                UpdateActivityInterval();
+                _activateTime = _callEndTime + ActivityInterval;
+                if (calltransfer)
+                    call.Transfer = 1;
+                    CurrentCall = call;
+                return call;
             }
+            return null;
         }
-
+        }
+ 
         public virtual Call Check(int currentTime)
         {
             if (CurrentCall != null && currentTime >= _callEndTime)
@@ -344,8 +345,26 @@ namespace CDRSim.Entities.Agents
         public virtual double GetInfoTransferProbability(int currentTime, int index)
         {
             var relativeAgentImportance = RealContactProbabilities[index] / RealContactProbabilities.Max();
-            var result = Information.GetRelevance(currentTime) + ExperimentGlobal.Instance.Parameters.Information.Importance + InterestDegree + relativeAgentImportance;
-            result /= 4;
+            //var result = Information.GetRevenance(currentTime) + Information.Importance + InterestDegree + relativeAgentImportance;
+            //result /= 4;
+
+            var result = Information.GetRelevance(currentTime) + 
+                ExperimentGlobal.Instance.Parameters.Information.Importance + InterestDegree + relativeAgentImportance;
+
+           //result = Math.Sqrt(result);
+
+            result /= 3;
+
+            //using (StreamWriter file = new StreamWriter("prob.txt", true))
+            //{
+            //    file.WriteLine(result);
+            //}
+
+            //if (currentTime < 1000) {
+            //    Console.WriteLine(Information.Importance);
+            //    Console.WriteLine(InterestDegree);
+            //    Console.WriteLine(relativeAgentImportance);
+            //}
             return result;
         }
     }

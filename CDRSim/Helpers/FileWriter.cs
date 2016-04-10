@@ -34,6 +34,18 @@ namespace CDRSim.Helpers
             }
         }
 
+        public void WriteDumpDataExt(int[][] data)
+        {
+            using (StreamWriter file = new StreamWriter(SaveName + "-ext.txt"))
+            {
+                for (int i = 0; i < data.Length; i++)
+                {
+                    var item = data[i];
+                    file.WriteLine("{0} {1} {2} {3} {4}", item[0], item[1], item[2], item[3], item[4]);
+                }
+            }
+        }
+
         public void WriteContacts(Network network)
         {
             using (StreamWriter file = new StreamWriter(SaveName + "contacts" + ".txt"))

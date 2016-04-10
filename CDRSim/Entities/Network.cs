@@ -38,6 +38,8 @@ namespace CDRSim.Entities
                     }
                 }
             }
+            var rnd = new Random();
+            Agents = Agents.OrderBy(item => rnd.Next()).ToList();
             foreach (var agent in Agents)
             {
                 agent.Initialize(Agents);

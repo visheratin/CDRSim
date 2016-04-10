@@ -73,6 +73,7 @@
     <Compile Include="Entities\Agents\Talker.cs" />
     <Compile Include="Entities\Call.cs" />
     <Compile Include="Entities\ExperimentGlobal.cs" />
+    <Compile Include="Helpers\DataDumper.cs" />
     <Compile Include="Helpers\FileWriter.cs" />
     <Compile Include="Helpers\XmlSerializableDictionary.cs" />
     <Compile Include="Parameters\AgentParameters.cs" />
