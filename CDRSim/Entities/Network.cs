@@ -13,7 +13,7 @@ namespace CDRSim.Entities
     {
         public List<Agent> Agents;
 
-        public Network(int agentsNumber = 1000)
+        public Network(int percentage, int agentsNumber = 1000)
         {
             var random = new Random();
             Agents = new List<Agent>();
@@ -38,6 +38,26 @@ namespace CDRSim.Entities
                     }
                 }
             }
+           
+            List<Agent> agentsToDeleteO = null;
+
+
+            //agentsToDeleteO = Agents.Where(a => a is Organizer).ToList();
+
+            //int orgspart = agentsToDeleteO.Count();
+            //Console.WriteLine(orgspart);
+
+
+            //for (int i = 0; i < orgspart * percentage / 100; i++)
+            //{
+            //    Agents.Remove(agentsToDeleteO[i]);
+            //    //Console.WriteLine(orgspart * percentage / 100);
+            //    //Console.WriteLine(agentsToDeleteO[i].Type);
+
+            //}
+
+            
+
             var rnd = new Random();
             Agents = Agents.OrderBy(item => rnd.Next()).ToList();
             foreach (var agent in Agents)
@@ -50,6 +70,26 @@ namespace CDRSim.Entities
             }
             var maxContance = Agents.Max(a => a.Contacts.Count());
             var t = maxContance;
+
+
+
+            agentsToDeleteO = Agents.Where(a => a is Organizer).ToList();
+
+            int orgspart = agentsToDeleteO.Count();
+            Console.WriteLine(orgspart);
+
+
+            for (int i = 0; i < orgspart * percentage / 100; i++)
+            //for(int i = 0; i < percentage; i++)
+            {
+                Agents.Remove(agentsToDeleteO[i]);
+                //Console.WriteLine(orgspart * percentage / 100);
+                //Console.WriteLine(agentsToDeleteO[i].Type);
+
+            }
+
+            Console.WriteLine(Agents.Count());
+
             //var tasks = new Task[Environment.ProcessorCount];
             //var taskAgents = new List<int>[Environment.ProcessorCount];
             //for (int i = 0; i < taskAgents.Length; i++)

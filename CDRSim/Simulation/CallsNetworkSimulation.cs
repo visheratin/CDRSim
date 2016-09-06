@@ -19,20 +19,26 @@ namespace CDRSim.Simulation
         public BlockingCollection<Call> Calls;
 
 
-        public CallsNetworkSimulation(int simulationLength, int agentsNumber)
+        public CallsNetworkSimulation(int simulationLength, int agentsNumber, int percentage)
         {
             this.simulationLength = simulationLength;
-            network = new Network(agentsNumber);
+            network = new Network(percentage, agentsNumber);
             InitializeAwareAgents();
             Calls = new BlockingCollection<Call>();
         }
 
         private void InitializeAwareAgents()
         {
+            Console.WriteLine("init awar agents");
+
             IEnumerable<Agent> agents = null;
+
+
             if (ExperimentGlobal.Instance.Parameters.Information.Spreaders == 0)
             {
                 agents = network.Agents.Where(a => a is Organizer);
+                Console.WriteLine("Organizers");
+                Console.WriteLine(agents.Count());
             }
             else if (ExperimentGlobal.Instance.Parameters.Information.Spreaders == 1)
             {
@@ -47,16 +53,20 @@ namespace CDRSim.Simulation
             //var agentsToAware = agents.Take((int)(ExperimentGlobal.Instance.Parameters.Simulation.AgentsNumber *
             //    ExperimentGlobal.Instance.Parameters.Information.SpreadersPart)).ToArray();
             var agentsToAware = agents.Take(10).ToArray();
+
+            Console.WriteLine(agentsToAware.Count());
+            
             foreach (var agent in agentsToAware)
             {
                 agent.Aware = true;
+                Console.WriteLine(agent.Type);
             }
         }
 
         public void Run(string name, bool inParallel = false)
         {
             var fw = new FileWriter(name);
-            fw.WriteContacts(network);
+            //fw.WriteContacts(network);
             //var dumpData = new List<int>();
             //for (int i = 0; i < simulationLength; i++)
             //{
@@ -125,8 +135,8 @@ namespace CDRSim.Simulation
                 }
                 fw.WriteDumpDataExt(dumpData);
                 GC.Collect();
-                fw.WriteCallsCount();
-                fw.WriteCallsData(Calls);
+                //fw.WriteCallsCount();
+                //fw.WriteCallsData(Calls);
             }
             else
             {
