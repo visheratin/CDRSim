@@ -19,17 +19,17 @@ namespace CDRSim.Simulation
         public BlockingCollection<Call> Calls;
 
 
-        public CallsNetworkSimulation(int simulationLength, int agentsNumber, int percentage)
+        public CallsNetworkSimulation(int simulationLength, int agentsNumber, int percentage, String typeToDelete)
         {
             this.simulationLength = simulationLength;
-            network = new Network(percentage, agentsNumber);
+            network = new Network(percentage, typeToDelete, agentsNumber);
             InitializeAwareAgents();
             Calls = new BlockingCollection<Call>();
         }
 
         private void InitializeAwareAgents()
         {
-            Console.WriteLine("init awar agents");
+            //Console.WriteLine("init awar agents");
 
             IEnumerable<Agent> agents = null;
 
@@ -54,12 +54,12 @@ namespace CDRSim.Simulation
             //    ExperimentGlobal.Instance.Parameters.Information.SpreadersPart)).ToArray();
             var agentsToAware = agents.Take(10).ToArray();
 
-            Console.WriteLine(agentsToAware.Count());
+            //Console.WriteLine(agentsToAware.Count());
             
             foreach (var agent in agentsToAware)
             {
                 agent.Aware = true;
-                Console.WriteLine(agent.Type);
+                //Console.WriteLine(agent.Type);
             }
         }
 
@@ -93,6 +93,7 @@ namespace CDRSim.Simulation
 
             if (!inParallel)
             {
+
                 for (int i = 0; i < simulationLength; i++)
                 {
                     int[] callInfo = new int[5];
@@ -145,6 +146,7 @@ namespace CDRSim.Simulation
                 {
                     taskAgents[j] = new List<int>();
                 }
+
                 var counter = 0;
                 while (counter < network.Agents.Count)
                 {

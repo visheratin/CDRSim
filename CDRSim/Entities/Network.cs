@@ -13,7 +13,7 @@ namespace CDRSim.Entities
     {
         public List<Agent> Agents;
 
-        public Network(int percentage, int agentsNumber = 1000)
+        public Network(int deletedAgents, String typeToDelete, int agentsNumber = 1000)
         {
             var random = new Random();
             Agents = new List<Agent>();
@@ -39,7 +39,7 @@ namespace CDRSim.Entities
                 }
             }
            
-            List<Agent> agentsToDeleteO = null;
+            List<Agent> agentsToDelete = null;
 
 
             //agentsToDeleteO = Agents.Where(a => a is Organizer).ToList();
@@ -73,19 +73,24 @@ namespace CDRSim.Entities
 
 
 
-            agentsToDeleteO = Agents.Where(a => a is Organizer).ToList();
-
-            int orgspart = agentsToDeleteO.Count();
-            Console.WriteLine(orgspart);
-
-
-            for (int i = 0; i < orgspart * percentage / 100; i++)
-            //for(int i = 0; i < percentage; i++)
+            if (typeToDelete == "Organizer")
             {
-                Agents.Remove(agentsToDeleteO[i]);
-                //Console.WriteLine(orgspart * percentage / 100);
-                //Console.WriteLine(agentsToDeleteO[i].Type);
+                agentsToDelete = Agents.Where(a => a is Organizer).ToList();
+            }
+            else if (typeToDelete == "Talker")
+            {
+                agentsToDelete = Agents.Where(a => a is Talker).ToList();
+            }
+            else if (typeToDelete == "RegularAgent")
+            {
+                agentsToDelete = Agents.Where(a => a is RegularAgent).ToList();
+            }
 
+            Console.WriteLine(agentsToDelete.Count());
+
+            for (int i = 0; i < deletedAgents; i++)
+            {
+                Agents.Remove(agentsToDelete[i]);
             }
 
             Console.WriteLine(Agents.Count());
