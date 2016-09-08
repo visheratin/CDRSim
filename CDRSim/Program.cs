@@ -21,8 +21,8 @@ namespace CDRSim
         static void Main(string[] args)
         {
 
-            //List<String> experiments = new List<String> { "RealExperiment", "ExtremeExperiment" };
-            List<String> experiments = new List<String> { "ExtremeExperiment" };
+            List<String> experiments = new List<String> { "RealExperiment", "ExtremeExperiment" };
+            //List<String> experiments = new List<String> { "ExtremeExperiment" };
             List<int> agentsNumbers = new List<int> { 1000, 1000, 1000, 500, 1000, 5000 };
 
 
@@ -70,7 +70,7 @@ namespace CDRSim
                         //int counter = 0;
 
                         //for (int i = 0; i < 1; i++)
-                        Parallel.For(0, 10, pOptions, i =>
+                        Parallel.For(0,200, pOptions, i =>
                        {
 
                             Console.WriteLine("i" + i);
